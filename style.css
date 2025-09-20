@@ -3,7 +3,7 @@ body{
   font-family:Arial,Helvetica,sans-serif;
   max-width:960px;
   margin:auto;
-  padding:2rem;
+  padding:1rem 2rem;
   color:#0f172a;
 }
 header h1{ margin-top:0; }
