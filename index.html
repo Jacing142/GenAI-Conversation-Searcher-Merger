@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>GPT Report</title>
+
+  <!-- Vendor CSS (pinned) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.css" />
+
+  <!-- Inline favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🤖</text></svg>'>
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="./style.css"/>
+  <link rel="stylesheet" href="./dashboard.css"/>
+  
+  <style>
+    /* Search-specific styles */
+    #search-section { margin-top: 1rem; }
+    .search-result {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      transition: background 0.2s ease;
+    }
+    .search-result:hover { background: #f8fafc; }
+    .search-result mark {
+      background: #fef3c7;
+      padding: 2px 4px;
+      border-radius: 2px;
+      font-weight: 500;
+    }
+    #searchInput {
+      flex: 1;
+      padding: 0.6rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      font-size: 14px;
+    }
+    #searchInput:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    #dateFilter {
+      padding: 0.6rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+    }
+    #results-list {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      background: #fafafa;
+    }
+    #result-count { font-weight: 600; color: #475569; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📝 GPT Report</h1>
+  </header>
+
+  <fieldset>
+    <legend>1. Configure Report</legend>
+
+    <div class="row" style="justify-content: space-between; align-items: flex-start;">
+      <div>
+        <!-- Hidden file input -->
+        <input
+          type="file"
+          id="fileInput"
+          accept=".zip,.json"
+          multiple
+          style="display:none"
+          title="Upload a conversations export (ZIP or JSON)"
+          aria-label="Upload conversations file"
+        />
+        <label for="fileInput" id="fileInputLabel" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
+          Upload conversations file
+        </label>
+
+        <!-- Upload button -->
+        <button id="uploadBtn">Upload Chat Exports</button>
+
+        <!-- Drag & drop zone -->
+        <div id="dropZone" aria-label="Drag and drop files here">
+          <div>Drag & drop ZIP/JSON files here<br><small>(ChatGPT or Claude)</small></div>
+        </div>
+
+        <!-- File chips -->
+        <div id="file-chips" aria-live="polite"></div>
+      </div>
+
+      <!-- Privacy note -->
+      <div id="privacy-note">
+        <strong>Privacy:</strong> processing happens <em>locally in your browser</em>. No files or data are uploaded anywhere.
+      </div>
+    </div>
+
+    <div class="row" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+      <label for="piiToggle" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" id="piiToggle" style="cursor: pointer;">
+        <span>🔒 Scrub PII (emails, phones, URLs) before analysis</span>
+      </label>
+      <small id="piiStatus" style="color: #64748b; margin-left: 28px; display: none;"></small>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>2. Analyze</legend>
+
+    <!-- Keep ONLY Extract button (others removed per requirements) -->
+    <div class="row" style="margin-bottom: 1rem;">
+      <button id="extractBtn" disabled>Extract Data</button>
+    </div>
+
+    <div id="progress-wrapper" style="display:none;">
+      <span id="status"></span>
+      <progress id="progressBar" value="0" max="100"></progress>
+    </div>
+
+    <!-- (Projects UI remains in DOM but hidden by JS later if needed) -->
+    <div id="project-list-container" style="display:none;">
+      <h4>Top Projects</h4>
+      <div id="project-list"></div>
+    </div>
+  </fieldset>
+
+  <!-- Search Section -->
+  <fieldset id="search-section" style="display:none;">
+    <legend>3. Search & Export</legend>
+    <div class="row" style="margin-bottom: 1rem;">
+      <input type="text" id="searchInput" placeholder="Search conversations...">
+      <select id="dateFilter">
+        <option value="all">All Time</option>
+        <option value="30">Last 30 Days</option>
+        <option value="90">Last 90 Days</option>
+        <option value="365">Last Year</option>
+      </select>
+      <button id="searchBtn">Search</button>
+    </div>
+
+    <!-- Active filter chips (optional future UI) -->
+    <div id="active-filter-chips" class="chips"></div>
+    
+    <div id="search-results" style="display:none;">
+      <div class="row" style="justify-content: space-between; align-items:center; margin-bottom: 1rem;">
+        <span id="result-count">0 results</span>
+        <div>
+          <button id="selectAllBtn" class="btn-secondary">Select All</button>
+          <button id="clearBtn" class="btn-secondary">Clear</button>
+          <button id="exportJsonBtn" class="btn-secondary" disabled>Export JSON</button>
+          <button id="exportHtmlBtn" class="btn-secondary" disabled>Export HTML</button>
+          <button id="exportCsvBtn" class="btn-secondary" disabled>Export CSV</button>
+        </div>
+      </div>
+      <div id="results-list"><!-- Results inserted here --></div>
+    </div>
+  </fieldset>
+
+  <div id="spotlight-container" class="container" style="display:none;">
+    <h2 id="spotlight-title"></h2>
+    <div id="facts-bar"></div>
+    <div id="chart-wrap">
+      <div id="chart-title"></div>
+      <canvas id="chart-canvas"></canvas>
+    </div>
+  </div>
+
+  <!-- Conversation Modal -->
+  <div id="conversation-modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <h3 id="modal-title">Conversation</h3>
+        <button id="modal-close" aria-label="Close">✖</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Full conversation content rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor JS (pinned, non-module) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Entry module -->
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
