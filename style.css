@@ -59,7 +59,7 @@ pre{ white-space:pre-wrap; background:#f7f7f7; padding:1rem; border-radius:4px }
 
 /* Modal */
 #conversation-modal{
-  position:fixed; inset:0; display:none; z-index:10000;
+  position:fixed; inset:0; display:none !important; z-index:10000;
 }
 #conversation-modal.open{ display:block; }
 #conversation-modal .modal-backdrop{
