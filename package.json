@@ -1,8 +1,9 @@
 {
-  "name": "gpt-report-mvp",
+  "name": "genai-conversation-searcher-merger",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=20"
   }
 }
+

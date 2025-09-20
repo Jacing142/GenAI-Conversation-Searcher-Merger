@@ -873,21 +873,6 @@ function wire() {
   if (extractBtn) extractBtn.addEventListener('click', handleExtract);
   if (processBtn) processBtn.addEventListener('click', handleProcessReport);
 
-  // PII toggle status text
-  const piiToggle = document.getElementById('piiToggle');
-  if (piiToggle) {
-    const status = document.getElementById('piiStatus');
-    piiToggle.addEventListener('change', (e) => {
-      if (!status) return;
-      if (e.target.checked) {
-        status.textContent = 'Will scrub PII on next extraction';
-        status.style.display = 'inline';
-      } else {
-        status.style.display = 'none';
-      }
-    });
-  }
-
   // Debug panel toggle (Ctrl+Shift+D)
   document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.shiftKey && e.key === 'D') {

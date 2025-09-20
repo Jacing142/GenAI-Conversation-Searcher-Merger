@@ -78,19 +78,6 @@ async function generateHash(data) {
   return Math.abs(hash).toString(16).padStart(16, '0').substring(0, 16);
 }
 
-// --- PII scrubber (emails, phones, URLs, long numbers) ---
-export function scrubTextPII(text) {
-  if (!text) return text;
-  return String(text)
-    // emails
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email]')
-    // phones (loose; +, (), spaces, dashes)
-    .replace(/(\+?\d[\d\s().-]{6,}\d)/g, '[phone]')
-    // URLs
-    .replace(/\bhttps?:\/\/[^\s)]+/gi, '[url]')
-    // long digit strings (6+; catches CC-like sequences without claiming they are)
-    .replace(/\b\d{6,}\b/g, '[digits]');
-}
 
 // === Extract Clean Message Text ===
 function extractMessageText(content) {
