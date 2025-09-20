@@ -52,11 +52,10 @@ Settings → Your Data → Request export → Download JSON
 
 ## Screenshots
 
-[Add screenshots here showing:
-- Upload interface
-- Search results  
-- Export options
-- Data export steps from ChatGPT/Claude]
+<img width="475" height="297" alt="Untitled design (11)" src="https://github.com/user-attachments/assets/5ccedff1-5d93-426e-8f8a-3bd35807b313" />
+
+<img width="461" height="410" alt="Untitled design (12)" src="https://github.com/user-attachments/assets/6eee07f9-1cb3-4bbf-bd84-e1626ef5185c" />
+
 
 ## Browser Requirements
 
