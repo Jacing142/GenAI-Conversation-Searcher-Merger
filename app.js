@@ -185,7 +185,7 @@ function showGlobalStats() {
   initDashboard({
     threads: state.allThreads,
     container: statsContainer,
-    title: `📊 Your Complete ChatGPT Analytics (${state.allThreads.length} conversations)`
+    title: `📊 Your Complete GenAI Analytics (${state.allThreads.length} conversations)`
   });
 }
 
