@@ -265,13 +265,41 @@ function yyyymmdd(d = new Date()) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return `${day}-${m}-${y}`; // DD-MM-YYYY format
 }
 
-// best-effort: assume merged sources; caller can override base if needed
-export function getDefaultFilename(ext = 'json', base = 'Claude-GPT-merge') {
-  return `${base}-${yyyymmdd()}.${ext}`;
+// Clean keywords for filename (replace spaces and special chars with underscores)
+function cleanKeywords(filters) {
+  return filters.map(filter => 
+    filter.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_')
+  );
 }
+
+export function getDefaultFilename(ext = 'json', base = 'GenAI') {
+  const date = yyyymmdd();
+  const filters = getFilters(); // Get current search filters
+  
+  // Check if multiple files were uploaded by looking at the upload button text
+  const uploadBtn = document.getElementById('uploadBtn');
+  const isMultipleFiles = uploadBtn && uploadBtn.textContent.includes('files');
+  
+  // Build filename parts
+  let filename = base;
+  if (isMultipleFiles) {
+    filename += '-Merged';
+  }
+  filename += `-${date}`;
+  
+  // Add keywords if they exist
+  if (filters.length) {
+    const keywords = cleanKeywords(filters).join('-');
+    filename += `-${keywords}`;
+  }
+  
+  return `${filename}.${ext}`;
+}
+
+
 
 // ============ Exports ============
 
