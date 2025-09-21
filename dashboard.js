@@ -1,4 +1,4 @@
-// dashboard.js – Cleaned up version + fun facts under each stat
+// dashboard.js – Simplified to 4 key analytics charts
 
 import { 
   renderHourHistogram, 
@@ -62,139 +62,73 @@ function computeStats(threads){
     }
   });
 
+  // Calculate conversation length stats
+  const conversationLengths = threads.map(t => t.messages?.length || 0).sort((a, b) => a - b);
+  const shortest = conversationLengths[0] || 0;
+  const longest = conversationLengths[conversationLengths.length - 1] || 0;
+  const average = Math.round(conversationLengths.reduce((sum, len) => sum + len, 0) / conversationLengths.length) || 0;
+
   // span days (min 1 to avoid div by 0)
   const spanMs = (earliest && latest) ? (latest - earliest) : 0;
   const spanDays = Math.max(1, Math.round(spanMs / (1000*60*60*24)) || 1);
   const activeDays = activeDaysSet.size || (messages ? 1 : 0);
 
-  const msgsPerDay = messages ? (messages / spanDays) : 0;
-  const wordsPerDay = words ? (words / spanDays) : 0;
-
   return {
     chats,
     messages,
     words,
-    avgWordsPerMsg: messages ? Math.round(words / messages) : 0,
-    avgMsgsPerChat: chats ? (messages / chats).toFixed(1) : 0,
     userMessages,
     assistantMessages,
     peakHour: `${peakHour}:00`,
     byHour,
+    conversationLengths: { shortest, average, longest },
 
     // extras for fun facts
     earliest,
     latest,
     spanDays,
-    activeDays,
-    msgsPerDay,
-    wordsPerDay
+    activeDays
   };
-}
-
-// ---- Fun facts helpers ----
-function funFactFor(key, stats){
-  switch (key) {
-    case 'chats': {
-      // chats over the time range
-      const chatsPerWeek = stats.chats ? (stats.chats / Math.max(1, stats.spanDays/7)) : 0;
-      return stats.spanDays > 1
-        ? `≈ ${chatsPerWeek.toFixed(1)}/week across ${stats.spanDays} days`
-        : `All in a single day`;
-    }
-    case 'messages': {
-      const mpd = stats.msgsPerDay;
-      return stats.spanDays > 1
-        ? `≈ ${mpd.toFixed(1)} messages/day (${stats.activeDays} active days)`
-        : `All in one day`;
-    }
-    case 'words': {
-      const w = stats.words;
-      // very rough analogies
-      const novels = Math.max(1, Math.round(w / 80000)); // ~80k words/novel
-      let bits = [`≈ ${novels} novel${novels>1?'s':''}`];
-      if (w >= 400000) bits.push(`${(w / 783000).toFixed(1)}× the Bible`);
-      if (w >= 500000) bits.push(`${(w / 1084000).toFixed(1)}× Harry Potter`);
-      return bits.slice(0,2).join(' • ');
-    }
-    case 'avgw': {
-      return `≈ ${Math.round(stats.wordsPerDay || 0)} words/day`;
-    }
-    case 'avgm': {
-      return `Median chat ≈ ${(stats.messages && stats.chats) ? Math.max(1, Math.round(stats.messages / stats.chats)) : 0} msgs`;
-    }
-    case 'hour': {
-      const h = parseInt(stats.peakHour, 10);
-      const tag = (h >= 22 || h <= 5) ? '🌙 Night owl' : (h >= 6 && h <= 10) ? '🌅 Early bird' : '📈 Peak time';
-      return `${tag}`;
-    }
-    case 'ratio': {
-      const total = stats.userMessages + stats.assistantMessages;
-      const you = total ? Math.round((stats.userMessages / total) * 100) : 0;
-      return `You wrote ${you}% of messages`;
-    }
-    default:
-      return '';
-  }
 }
 
 function renderCards(stats, threads, container){
   const bar = $('#facts-bar', container);
   if (!bar) return;
 
-  // Define each card with its corresponding chart function
+  // Define the 4 key analytics cards
   const cards = [
     {
-      key: 'chats',
-      label: 'Total Chats',
-      value: stats.chats,
-      chartTitle: 'Conversation Length Distribution'
-    },
-    {
-      key: 'messages',
-      label: 'Messages',
-      value: stats.messages,
-      chartTitle: 'Top Conversations'
-    },
-    {
-      key: 'words',
-      label: 'Total Words',
-      value: stats.words,
-      chartTitle: 'Message Length Distribution'
-    },
-    {
-      key: 'avgw',
-      label: 'Avg Words/Msg',
-      value: stats.avgWordsPerMsg,
+      key: 'activity',
+      label: 'Activity Over Time',
+      value: `${stats.activeDays} active days`,
       chartTitle: 'Activity Over Time'
     },
     {
-      key: 'avgm',
-      label: 'Avg Msgs/Chat',
-      value: stats.avgMsgsPerChat,
-      chartTitle: 'Chat Length Analysis'
-    },
-    {
-      key: 'hour',
+      key: 'peak',
       label: 'Peak Hour',
       value: stats.peakHour,
-      chartTitle: 'Activity by Hour'
+      chartTitle: 'Messages by Hour of Day'
+    },
+    {
+      key: 'lengths',
+      label: 'Conversation Lengths',
+      value: `${stats.conversationLengths.shortest}-${stats.conversationLengths.longest} msgs`,
+      chartTitle: 'Conversation Length Distribution'
     },
     {
       key: 'ratio',
       label: 'User vs AI',
-      value: `${stats.userMessages}:${stats.assistantMessages}`,
+      value: 'View Distribution',
       chartTitle: 'User vs AI Messages'
     }
   ];
 
-  // Render the cards (with fun subtext)
+  // Render the cards
   bar.innerHTML = cards.map(card => {
-    const sub = funFactFor(card.key, stats);
     return `
       <div class="fact-card" data-key="${card.key}" data-chart-title="${card.chartTitle}">
         <div class="fact-title">${card.label}</div>
         <div class="fact-value">${fmt(card.value)}</div>
-        ${sub ? `<div class="fact-sub" style="font-size:12px;color:#64748b;margin-top:4px;">${sub}</div>` : ''}
       </div>
     `;
   }).join('');
@@ -224,36 +158,22 @@ function renderCards(stats, threads, container){
     setTimeout(() => {
       try {
         switch(key) {
-          case 'chats':
-            renderMessagesPerChat(ctx, threads);
-            break;
-          case 'messages': {
-            const topThreads = threads
-              .slice(0)
-              .sort((a, b) => (b.messages?.length || 0) - (a.messages?.length || 0))
-              .slice(0, 10);
-            renderTopThreads(
-              ctx,
-              topThreads.map(t => t.title),
-              topThreads.map(t => t.messages?.length || 0)
-            );
-            break;
-          }
-          case 'words':
-            renderWordsDistribution(ctx, threads);
-            break;
-          case 'avgw':
+          case 'activity':
             renderActivityTimeline(ctx, threads);
             break;
-          case 'avgm':
-            renderMessagesPerChat(ctx, threads);
-            break;
-          case 'hour':
+            
+          case 'peak':
             renderHourHistogram(ctx, stats.byHour);
             break;
+          
+          case 'lengths':
+            renderMessagesPerChat(ctx, threads);
+            break;  
+          
           case 'ratio':
             renderUserVsAI(ctx, stats.userMessages, stats.assistantMessages);
             break;
+            
           default:
             console.warn('Unknown chart key:', key);
         }
@@ -281,8 +201,8 @@ function renderCards(stats, threads, container){
     renderChartForKey(key);
   }
 
-  // Show hour chart by default
-  setTimeout(() => showChart('hour'), 200);
+  // Show activity chart by default
+  setTimeout(() => showChart('activity'), 200);
 
   // Add click handlers
   bar.addEventListener('click', (e) => {
@@ -296,7 +216,7 @@ function renderCards(stats, threads, container){
   });
 }
 
-// Main dashboard initialization - simplified without spotlight options
+// Main dashboard initialization
 export function initDashboard({ threads, container, title }){
   if (!container) return;
 
@@ -318,9 +238,12 @@ export function initDashboard({ threads, container, title }){
   // Create unique canvas ID for this container
   currentCanvasId = `chart-canvas-${Date.now()}`;
   
-  // Rebuild container with proper spacing to prevent cutoff
+  // Update title to use "GenAI" instead of "ChatGPT"
+  const displayTitle = title ? title.replace(/ChatGPT/gi, 'GenAI') : 'GenAI Analytics';
+  
+  // Rebuild container with proper spacing
   container.innerHTML = `
-    <h2>${title || 'All Conversations'}</h2>
+    <h2>${displayTitle}</h2>
     <div id="facts-bar"></div>
     <div id="chart-wrap" style="
       border: 1px solid #e2e8f0;

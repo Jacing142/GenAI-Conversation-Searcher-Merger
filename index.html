@@ -5,11 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>GenAI Conversation Searcher & Merger</title>
 
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
   <!-- Vendor CSS (pinned) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.css" />
 
   <!-- Inline favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🤖</text></svg>'>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🤖</text></svg>">
 
   <!-- App CSS -->
   <link rel="stylesheet" href="./style.css"/>
@@ -66,14 +71,15 @@
 <body>
 
   <header>
-    <h1>📝 GenAI Conversation Searcher & Merger</h1>
+    <h1>GenAI Conversation Explorer</h1>
+    <p class="subheader">Merge, Filter, Export GPT & Claude Conversations</p>
   </header>
 
   <fieldset>
-    <legend>1. Configure Report</legend>
+    <legend>1. Upload</legend>
 
     <div class="row" style="justify-content: space-between; align-items: flex-start;">
-      <div>
+      <div style="flex: 1; max-width: 600px;">
         <!-- Hidden file input -->
         <input
           type="file"
@@ -93,26 +99,36 @@
 
         <!-- Drag & drop zone -->
         <div id="dropZone" aria-label="Drag and drop files here">
-          <div>Drag & drop ZIP/JSON files here<br><small>(ChatGPT or Claude)</small></div>
+          <div>
+            <strong>Drag & drop ChatGPT/Claude ZIP or JSON files here</strong><br>
+            <small style="color: #667085;">Supports .zip and .json files up to 100MB</small>
+          </div>
         </div>
 
         <!-- File chips -->
         <div id="file-chips" aria-live="polite"></div>
+
+        <!-- Privacy note -->
+        <div id="privacy-note" style="margin-top: 24px;">
+          <strong>Privacy:</strong> All processing happens <em>locally in your browser</em>. No files or data are uploaded anywhere.
+        </div>
       </div>
 
-      <!-- Privacy note -->
-      <div id="privacy-note">
-        <strong>Privacy:</strong> processing happens <em>locally in your browser</em>. No files or data are uploaded anywhere.
+      <!-- Reserved space for future onboarding video -->
+      <div style="flex: 0 0 300px; margin-left: 32px;">
+        <div style="background: #f8fafc; border: 1px dashed #e5e7eb; border-radius: 8px; padding: 40px 20px; text-align: center; color: #667085;">
+          <p style="margin: 0; font-size: 14px;">Onboarding video<br>coming soon</p>
+        </div>
       </div>
     </div>
   </fieldset>
 
   <fieldset>
-    <legend>2. Analyze</legend>
+    <legend>2. Analytics</legend>
 
-    <!-- Keep ONLY Extract button (others removed per requirements) -->
+    <!-- Extract button -->
     <div class="row" style="margin-bottom: 1rem;">
-      <button id="extractBtn" disabled>Extract Data</button>
+      <button id="extractBtn" disabled>Extract</button>
     </div>
 
     <div id="progress-wrapper" style="display:none;">
@@ -120,7 +136,7 @@
       <progress id="progressBar" value="0" max="100"></progress>
     </div>
 
-    <!-- (Projects UI remains in DOM but hidden by JS later if needed) -->
+    <!-- Hidden projects UI -->
     <div id="project-list-container" style="display:none;">
       <h4>Top Projects</h4>
       <div id="project-list"></div>
@@ -130,6 +146,7 @@
   <!-- Search Section -->
   <fieldset id="search-section" style="display:none;">
     <legend>3. Search & Export</legend>
+    
     <div class="row" style="margin-bottom: 1rem;">
       <input type="text" id="searchInput" placeholder="Search conversations...">
       <select id="dateFilter">
@@ -141,18 +158,18 @@
       <button id="searchBtn">Search</button>
     </div>
 
-    <!-- Active filter chips (optional future UI) -->
+    <!-- Active filter chips -->
     <div id="active-filter-chips" class="chips"></div>
     
     <div id="search-results" style="display:none;">
       <div class="row" style="justify-content: space-between; align-items:center; margin-bottom: 1rem;">
         <span id="result-count">0 results</span>
-        <div>
+        <div class="row" style="gap: 8px;">
           <button id="selectAllBtn" class="btn-secondary">Select All</button>
           <button id="clearBtn" class="btn-secondary">Clear</button>
-          <button id="exportJsonBtn" class="btn-secondary" disabled>Export JSON</button>
-          <button id="exportHtmlBtn" class="btn-secondary" disabled>Export HTML</button>
-          <button id="exportCsvBtn" class="btn-secondary" disabled>Export CSV</button>
+          <button id="exportJsonBtn" class="btn-secondary" disabled title="Export selected conversations as JSON">Export JSON</button>
+          <button id="exportHtmlBtn" class="btn-secondary" disabled title="Export selected conversations as HTML">Export HTML</button>
+          <button id="exportCsvBtn" class="btn-secondary" disabled title="Export selected conversations as CSV">Export CSV</button>
         </div>
       </div>
       <div id="results-list"><!-- Results inserted here --></div>

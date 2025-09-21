@@ -6,14 +6,17 @@ const chartInstances = new Map();
 // ---- Global theme ----
 function setTheme() {
   if (!window.Chart) return;
-  Chart.defaults.borderColor = '#e5e7eb';
+  Chart.defaults.borderColor = '#d1d5db';
   Chart.defaults.font.family = 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif';
-  Chart.defaults.color = '#334155';
+  Chart.defaults.font.size = 13;
+  Chart.defaults.color = '#374151';
   Chart.defaults.responsive = true;
   Chart.defaults.maintainAspectRatio = false;
-  Chart.defaults.plugins.tooltip.backgroundColor = '#0f172a';
+  Chart.defaults.plugins.tooltip.backgroundColor = '#1f2937';
   Chart.defaults.plugins.tooltip.titleColor = '#ffffff';
-  Chart.defaults.plugins.tooltip.bodyColor = '#e2e8f0';
+  Chart.defaults.plugins.tooltip.bodyColor = '#e5e7eb';
+  Chart.defaults.plugins.tooltip.titleFont = { size: 14, weight: '600' };
+  Chart.defaults.plugins.tooltip.bodyFont = { size: 13 };
   Chart.defaults.plugins.legend.display = false;
 }
 if (window.Chart) {
@@ -57,8 +60,14 @@ function createChart(ctx, config) {
   
   const canvasId = ctx.canvas?.id || 'default';
   
-  // Destroy existing chart on this canvas
-  destroyChart(canvasId);
+  // More aggressive chart cleanup
+  const existingChart = Chart.getChart(ctx);
+  if (existingChart) {
+    existingChart.destroy();
+  }
+  
+  // Also clear from our registry
+  chartInstances.delete(canvasId);
   
   // Create new chart
   try {
