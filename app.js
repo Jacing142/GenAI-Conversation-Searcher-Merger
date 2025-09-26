@@ -53,6 +53,8 @@ const statusEl = $('status');
 const projectListContainer = $('project-list-container');
 const projectListDiv = $('project-list');
 const spotlightContainer = $('spotlight-container');
+// Track page visit
+mixpanel.track('Page Visit');
 
 // ---- Debug Panel ----
 function createDebugPanel() {
@@ -247,6 +249,12 @@ async function handleExtract() {
 
     state.estimatedPrice = Math.max(5, Math.round(state.allThreads.length * 0.002 * 100));
     showStatus(`Parsed ${state.allThreads.length} conversations.`);
+
+    // Track successful file upload
+    mixpanel.track('File Uploaded', { 
+      file_count: state.files.length,
+      conversation_count: state.allThreads.length 
+    });
 
     // Hide/disable projects UI for now
     renderProjectListHidden();
@@ -950,6 +958,7 @@ function wire() {
     }
     downloadFile('\uFEFF' + json, getDefaultFilename('json', 'Claude-GPT-merge'), 'application/json;charset=utf-8');
     Toastify({ text: 'JSON exported successfully', style: { background: '#10b981' } }).showToast();
+    mixpanel.track('Data Exported', { format: 'JSON', count: checkedIds.length });
   });
 
   document.getElementById('exportHtmlBtn')?.addEventListener('click', () => {
@@ -965,6 +974,7 @@ function wire() {
     }
     downloadFile(html, getDefaultFilename('html', 'Claude-GPT-merge'), 'text/html;charset=utf-8');
     Toastify({ text: 'HTML exported successfully', style: { background: '#10b981' } }).showToast();
+     mixpanel.track('Data Exported', { format: 'HTML', count: checkedIds.length });
   });
 
   // NEW: CSV export (make sure you add a button with id="exportCsvBtn" in index.html)
@@ -982,6 +992,7 @@ function wire() {
     // CSV returns with BOM for Excel compatibility
     downloadFile(csv, getDefaultFilename('csv', 'Claude-GPT-merge'), 'text/csv;charset=utf-8');
     Toastify({ text: 'CSV exported successfully', style: { background: '#10b981' } }).showToast();
+     mixpanel.track('Data Exported', { format: 'CSV', count: checkedIds.length });
   });
 
   // Initial filters bar render
