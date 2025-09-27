@@ -1,4 +1,4 @@
-// dashboard.js – Simplified to 4 key analytics charts
+// dashboard.js – Simplified to 4 key analytics charts + sample-mode overrides
 
 import { 
   renderHourHistogram, 
@@ -18,12 +18,57 @@ const fmt = (n) => n?.toLocaleString?.() ?? n;
 let currentChartType = null;
 let currentCanvasId = null;
 
+// Synthesize fake threads from monthly counts so charts.js can stay untouched.
+// Distributes N "messages" per month across the last 12 months.
+function synthesizeThreadsFromMonthlyCounts(monthlyCounts = []) {
+  if (!Array.isArray(monthlyCounts) || monthlyCounts.length === 0) return [];
+  const threads = [];
+  const now = new Date();
+
+  // Build from oldest → newest so axis looks natural
+  const months = monthlyCounts.slice(); // copy
+  const totalMonths = months.length;
+
+  months.forEach((count, i) => {
+    const msgs = [];
+    // Choose a date in the i-th month from the end (older first)
+    const d = new Date(now);
+    d.setMonth(d.getMonth() - (totalMonths - 1 - i));
+    d.setDate(15); // middle of month to keep it simple
+    d.setHours(10, 0, 0, 0);
+
+    // We only need "count" messages for charts.js to aggregate
+    const n = Math.max(0, Math.floor(count));
+    for (let k = 0; k < n; k++) {
+      const mDate = new Date(d);
+      // jitter within the day (minute-level) so they aren't all identical
+      mDate.setMinutes(d.getMinutes() + (k % 60));
+      msgs.push({
+        role: k % 2 === 0 ? 'user' : 'assistant',
+        text: 'synthetic',
+        created_at: mDate.toISOString()
+      });
+    }
+
+    threads.push({
+      id: `synthetic_${i}`,
+      title: `Synthetic Month ${i + 1}`,
+      created_at: d.toISOString(),
+      updated_at: d.toISOString(),
+      messages: msgs
+    });
+  });
+
+  return threads;
+}
+
+
+// ---------- Core stats from real threads ----------
 function computeStats(threads){
   let chats = threads.length, messages = 0, words = 0;
   const byHour = Array(24).fill(0);
   let userMessages = 0, assistantMessages = 0;
 
-  // extra for fun facts
   let earliest = null;
   let latest = null;
   const activeDaysSet = new Set();
@@ -40,35 +85,32 @@ function computeStats(threads){
         const h = d.getHours();
         byHour[h] = (byHour[h] || 0) + 1;
 
-        // time range + active days
         earliest = (earliest === null || d < earliest) ? d : earliest;
         latest   = (latest   === null || d > latest)   ? d : latest;
+
         const dayKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         activeDaysSet.add(dayKey);
       }
-      
       if (m.role === 'user') userMessages++;
       else if (m.role === 'assistant') assistantMessages++;
     }
   }
 
-  // Find peak hour
+  // Peak hour
   let peakHour = 0;
   let maxMessages = 0;
   byHour.forEach((count, hour) => {
-    if (count > maxMessages) {
-      maxMessages = count;
-      peakHour = hour;
-    }
+    if (count > maxMessages) { maxMessages = count; peakHour = hour; }
   });
 
-  // Calculate conversation length stats
+  // Conversation lengths
   const conversationLengths = threads.map(t => t.messages?.length || 0).sort((a, b) => a - b);
   const shortest = conversationLengths[0] || 0;
   const longest = conversationLengths[conversationLengths.length - 1] || 0;
-  const average = Math.round(conversationLengths.reduce((sum, len) => sum + len, 0) / conversationLengths.length) || 0;
+  const average = Math.round(
+    conversationLengths.reduce((sum, len) => sum + len, 0) / (conversationLengths.length || 1)
+  ) || 0;
 
-  // span days (min 1 to avoid div by 0)
   const spanMs = (earliest && latest) ? (latest - earliest) : 0;
   const spanDays = Math.max(1, Math.round(spanMs / (1000*60*60*24)) || 1);
   const activeDays = activeDaysSet.size || (messages ? 1 : 0);
@@ -79,11 +121,9 @@ function computeStats(threads){
     words,
     userMessages,
     assistantMessages,
-    peakHour: `${peakHour}:00`,
+    peakHour: `${String(peakHour).padStart(2,'0')}:00`,
     byHour,
     conversationLengths: { shortest, average, longest },
-
-    // extras for fun facts
     earliest,
     latest,
     spanDays,
@@ -91,89 +131,187 @@ function computeStats(threads){
   };
 }
 
-function renderCards(stats, threads, container){
+// ---------- Synthetic builders used only in sample mode ----------
+function makeThreadsForBuckets(bucketCounts) {
+  const now = new Date();
+  const mkMsgs = (n) => Array.from({ length: n }, (_, i) => ({
+    role: i % 2 ? 'assistant' : 'user',
+    text: `Sample message ${i + 1}`,
+    created_at: now.toISOString()
+  }));
+  const out = [];
+  const pushN = (nThreads, msgsPerThread) => {
+    for (let i = 0; i < nThreads; i++) {
+      out.push({
+        id: `bucket_${msgsPerThread}_${i}`,
+        title: `Sample conversation (${msgsPerThread} messages)`,
+        created_at: now.toISOString(),
+        messages: mkMsgs(msgsPerThread)
+      });
+    }
+  };
+  // Example mapping: pick a typical size inside each bucket
+  pushN(bucketCounts['1-5']   || 0, 3);
+  pushN(bucketCounts['6-10']  || 0, 8);
+  pushN(bucketCounts['11-20'] || 0, 15);
+  pushN(bucketCounts['21-50'] || 0, 30);
+  pushN(bucketCounts['50+']   || 0, 60);
+  return out;
+}
+
+function makeThreadsForMonthlyCounts(monthCounts) {
+  const out = [];
+  const now = new Date();
+  monthCounts.forEach((count, i) => {
+    const d = new Date(now);
+    d.setMonth(d.getMonth() - (11 - i)); // oldest → newest
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const messages = Array.from({ length: count }, (_, k) => {
+      const dd = new Date(y, m, Math.min(25, 1 + (k % 25)), 10, 0, 0);
+      return {
+        role: k % 2 ? 'assistant' : 'user',
+        text: `Synthetic activity ${k + 1}`,
+        created_at: dd.toISOString()
+      };
+    });
+    out.push({
+      id: `month_${y}_${String(m + 1).padStart(2, '0')}`,
+      title: `Activity ${y}-${String(m + 1).padStart(2, '0')}`,
+      created_at: new Date(y, m, 1).toISOString(),
+      messages
+    });
+  });
+  return out;
+}
+
+// ---------- Rendering ----------
+function renderCards(stats, threads, container, { sampleMode, statsOverride }){
   const bar = $('#facts-bar', container);
   if (!bar) return;
 
-  // Define the 4 key analytics cards
+  const displayActiveDays = (sampleMode && statsOverride?.activeDays != null)
+    ? statsOverride.activeDays
+    : stats.activeDays;
+
+  const displayPeakHour = (sampleMode && statsOverride?.peakHour)
+    ? statsOverride.peakHour
+    : stats.peakHour;
+
+  const ratioLabel = (sampleMode && statsOverride?.userVsAi)
+    ? `${statsOverride.userVsAi.user}% vs ${statsOverride.userVsAi.ai}%`
+    : 'View Distribution';
+
   const cards = [
-    {
-      key: 'activity',
-      label: 'Activity Over Time',
-      value: `${stats.activeDays} active days`,
-      chartTitle: 'Activity Over Time'
-    },
-    {
-      key: 'peak',
-      label: 'Peak Hour',
-      value: stats.peakHour,
-      chartTitle: 'Messages by Hour of Day'
-    },
-    {
-      key: 'lengths',
-      label: 'Conversation Lengths',
-      value: `${stats.conversationLengths.shortest}-${stats.conversationLengths.longest} msgs`,
-      chartTitle: 'Conversation Length Distribution'
-    },
-    {
-      key: 'ratio',
-      label: 'User vs AI',
-      value: 'View Distribution',
-      chartTitle: 'User vs AI Messages'
-    }
+    { key: 'activity', label: 'Activity Over Time', value: `${displayActiveDays} active days`, chartTitle: 'Activity Over Time' },
+    { key: 'peak',     label: 'Peak Hour',          value: displayPeakHour,                 chartTitle: 'Messages by Hour of Day' },
+    { key: 'lengths',  label: 'Conversation Lengths', value: `${stats.conversationLengths.shortest}-${stats.conversationLengths.longest} msgs`, chartTitle: 'Conversation Length Distribution' },
+    { key: 'ratio',    label: 'User vs AI',         value: ratioLabel,                      chartTitle: 'User vs AI Messages' }
   ];
 
-  // Render the cards
-  bar.innerHTML = cards.map(card => {
-    return `
-      <div class="fact-card" data-key="${card.key}" data-chart-title="${card.chartTitle}">
-        <div class="fact-title">${card.label}</div>
-        <div class="fact-value">${fmt(card.value)}</div>
-      </div>
-    `;
-  }).join('');
+  bar.innerHTML = cards.map(card => `
+    <div class="fact-card" data-key="${card.key}" data-chart-title="${card.chartTitle}">
+      <div class="fact-title">${card.label}</div>
+      <div class="fact-value">${fmt(card.value)}</div>
+    </div>
+  `).join('');
 
-  // Get canvas element  
   const chartCanvas = $(`#${currentCanvasId}`, container);
   const chartTitle = $('#chart-title', container);
 
-  // Function to render chart based on key
   function renderChartForKey(key) {
-    if (!chartCanvas) {
-      console.error('Canvas not found:', currentCanvasId);
-      return;
-    }
-    
-    // Get fresh context
+    if (!chartCanvas) return console.error('Canvas not found:', currentCanvasId);
     const ctx = chartCanvas.getContext('2d');
-    if (!ctx) {
-      console.error('Could not get 2D context');
-      return;
-    }
-    
-    // Clear any existing chart
+    if (!ctx) return console.error('Could not get 2D context');
+
     destroyChart(currentCanvasId);
-    
-    // Small delay to ensure canvas is ready
+
     setTimeout(() => {
       try {
-        switch(key) {
-          case 'activity':
-            renderActivityTimeline(ctx, threads);
+        switch (key) {
+          case 'activity': {
+            // SAMPLE MODE: keep your hand-crafted chart exactly as-is
+            if (sampleMode) {
+              // Hardwired labels & values to match the screenshot
+              const labels = [
+                '10/24','11/24','12/24','01/25','02/25','03/25',
+                '04/25','05/25','06/25','07/25','08/25','09/25'
+              ];
+              const values = [700, 950, 1020, 990, 720, 620, 800, 2100, 1650, 2800, 2400, 2520];
+
+              // eslint-disable-next-line no-undef
+              new Chart(ctx, {
+                type: 'line',
+                data: {
+                  labels,
+                  datasets: [{
+                    label: 'Messages per Month',
+                    data: values,
+                    fill: true,
+                    tension: 0.35,
+                    borderWidth: 3,
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: false },
+                    title: {
+                      display: true,
+                      text: 'Activity Over Time (Messages per Month)',
+                      color: '#0f172a',
+                      font: { size: 14, weight: '600' },
+                      padding: { bottom: 8 }
+                    },
+                    tooltip: { mode: 'index', intersect: false }
+                  },
+                  scales: {
+                    x: { grid: { display: false }, ticks: { color: '#475569' } },
+                    y: {
+                      beginAtZero: true,
+                      suggestedMax: 3000,
+                      ticks: { color: '#475569' },
+                      grid: { color: 'rgba(148, 163, 184, 0.2)' }
+                    }
+                  }
+                }
+              });
+            } else {
+              // REAL DATA: keep charts.js pipeline
+              renderActivityTimeline(ctx, threads);
+            }
             break;
-            
-          case 'peak':
-            renderHourHistogram(ctx, stats.byHour);
+          }
+          case 'peak': {
+            if (sampleMode && Array.isArray(statsOverride?.byHour) && statsOverride.byHour.length === 24) {
+              renderHourHistogram(ctx, statsOverride.byHour);
+            } else {
+              renderHourHistogram(ctx, stats.byHour);
+            }
             break;
-          
-          case 'lengths':
-            renderMessagesPerChat(ctx, threads);
-            break;  
-          
-          case 'ratio':
-            renderUserVsAI(ctx, stats.userMessages, stats.assistantMessages);
+          }
+          case 'lengths': {
+            if (sampleMode && statsOverride?.lengthBuckets) {
+              const synthetic = makeThreadsForBuckets(statsOverride.lengthBuckets);
+              renderMessagesPerChat(ctx, synthetic);
+            } else {
+              renderMessagesPerChat(ctx, threads);
+            }
             break;
-            
+          }
+          case 'ratio': {
+            if (sampleMode && statsOverride?.userVsAi) {
+              renderUserVsAI(ctx, statsOverride.userVsAi.user, statsOverride.userVsAi.ai);
+            } else {
+              renderUserVsAI(ctx, stats.userMessages, stats.assistantMessages);
+            }
+            break;
+          }
           default:
             console.warn('Unknown chart key:', key);
         }
@@ -183,11 +321,7 @@ function renderCards(stats, threads, container){
     }, 100);
   }
 
-  // Set default view and handle clicks
   function showChart(key) {
-    console.log('Switching to chart:', key);
-    
-    // Update active state
     $$('.fact-card', container).forEach(c => c.classList.remove('active'));
     const activeCard = bar.querySelector(`.fact-card[data-key="${key}"]`);
     if (activeCard) {
@@ -195,32 +329,25 @@ function renderCards(stats, threads, container){
       const title = activeCard.getAttribute('data-chart-title');
       if (chartTitle) chartTitle.textContent = title;
     }
-    
-    // Render new chart
     currentChartType = key;
     renderChartForKey(key);
   }
 
-  // Show activity chart by default
   setTimeout(() => showChart('activity'), 200);
 
-  // Add click handlers
   bar.addEventListener('click', (e) => {
     const card = e.target.closest('.fact-card');
     if (card) {
       const key = card.getAttribute('data-key');
-      if (key && key !== currentChartType) {
-        showChart(key);
-      }
+      if (key && key !== currentChartType) showChart(key);
     }
   });
 }
 
-// Main dashboard initialization
-export function initDashboard({ threads, container, title }){
+// ---------- Entry ----------
+export function initDashboard({ threads, container, title, statsOverride = null, sampleMode = false }){
   if (!container) return;
 
-  // Clear any existing charts
   destroyChart();
   currentChartType = null;
 
@@ -230,18 +357,14 @@ export function initDashboard({ threads, container, title }){
     return;
   }
 
-  // Sort threads by message count
-  const sortedThreads = [...threads].sort((a, b) => 
+  const sortedThreads = [...threads].sort((a, b) =>
     (b.messages?.length || 0) - (a.messages?.length || 0)
   );
 
-  // Create unique canvas ID for this container
   currentCanvasId = `chart-canvas-${Date.now()}`;
-  
-  // Update title to use "GenAI" instead of "ChatGPT"
+
   const displayTitle = title ? title.replace(/ChatGPT/gi, 'GenAI') : 'GenAI Analytics';
-  
-  // Rebuild container with proper spacing
+
   container.innerHTML = `
     <h2>${displayTitle}</h2>
     <div id="facts-bar"></div>
@@ -267,9 +390,8 @@ export function initDashboard({ threads, container, title }){
     </div>
   `;
 
-  // Compute stats and render
   const stats = computeStats(threads);
-  renderCards(stats, sortedThreads, container);
+  renderCards(stats, sortedThreads, container, { sampleMode, statsOverride });
 
   container.style.display = 'block';
 }

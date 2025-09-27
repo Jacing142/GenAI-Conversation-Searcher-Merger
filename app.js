@@ -1,4 +1,4 @@
-// app.js – Full file (includes: DnD, modal viewer, better filenames, virtualization, legacy button hide, no price pill)
+// app.js – Full file (DnD, modal viewer, exports, virtualization, static charts)
 
 import { parseExport, detectQAConversations } from './parser.js';
 import { initDashboard } from './dashboard.js';
@@ -18,7 +18,8 @@ import {
   setSelections,
   downloadFile,
   highlightText,
-  getDefaultFilename
+  getDefaultFilename,
+  setFilters
 } from './search.js';
 
 const $ = (id) => document.getElementById(id);
@@ -35,7 +36,30 @@ const state = {
   qa: [],
   currentClusterName: null,
   currentClusterThreads: [],
-  uploadHash: null
+  uploadHash: null,
+  dashboardLocked: false,
+
+  // Sample mode
+  sampleMode: false,
+  sampleDefaultFiltersCount: 0,
+  _prevFilterCount: 0,
+  _sampleExtraLimit: 0 // grows by up to +2 as filters are removed
+};
+
+// Charts: mount once per dataset (sample OR real)
+let dashboardMounted = false;
+
+// Fixed sample-mode stats (used only when state.sampleMode === true)
+const DEMO_STATS = {
+  activeDays: 220,
+  peakHour: '10:00',
+  // 24 values with a clear peak at 10:00
+  byHour: [5,8,12,15,22,35,45,58,72,85,100,95,88,82,75,68,62,58,52,45,38,28,18,8],
+  userVsAi: { user: 45, ai: 55 },
+  // Desired distribution for lengths (absolute thread counts)
+  lengthBuckets: { '1-5': 12, '6-10': 7, '11-20': 3, '21-50': 8, '50+': 2 },
+  // Monthly activity counts (12 values = last 12 months)
+  monthlyActivityCounts: [700, 950, 1020, 990, 720, 620, 800, 2100, 1650, 2800, 2400, 2520]
 };
 
 // ---- DOM Elements ----
@@ -53,6 +77,7 @@ const statusEl = $('status');
 const projectListContainer = $('project-list-container');
 const projectListDiv = $('project-list');
 const spotlightContainer = $('spotlight-container');
+
 // Track page visit
 mixpanel.track('Page Visit');
 
@@ -160,7 +185,81 @@ function mergeSelectedFiles(newFiles) {
   debugLog('Files selected', { count: state.files.length, names });
 }
 
-// ---- Show Global Stats (place AFTER the buttons row so Extract stays above charts) ----
+// ---- Sample Data Loading ----
+async function loadSampleData() {
+  try {
+    const response = await fetch('./sample-data.json');
+    if (!response.ok) {
+      console.warn('Sample data not found, skipping…');
+      return;
+    }
+    const sampleJson = await response.json();
+
+    // Direct hydrate (preserve titles)
+    state.allThreads = (sampleJson.conversations || []).map((c, i) => {
+      const norm = d => (d ? new Date(d) : null);
+      return {
+        ...c,
+        id: c.id || `sample_${i + 1}`,
+        title: (c.title && c.title.trim()) ? c.title.trim() : `Conversation ${i + 1}`,
+        created_at: norm(c.created_at),
+        updated_at: norm(c.updated_at),
+        messages: (c.messages || []).map(m => ({ ...m, created_at: norm(m.created_at) }))
+      };
+    });
+    state.uploadHash = 'sample-json';
+
+    initSearch(state.allThreads);
+
+    // Sample mode with your 4 curated filters (2 phrases)
+    state.sampleMode = true;
+    const sampleFilters = [
+      'marketing strategy',
+      'SQL',
+      'interview',
+      'follow-up email'
+    ];
+    setFilters(sampleFilters);
+    state.sampleDefaultFiltersCount = sampleFilters.length;
+    state._prevFilterCount = sampleFilters.length;
+    state._sampleExtraLimit = 0;
+
+    // Show search UI
+    const searchSection = document.getElementById('search-section');
+    if (searchSection) searchSection.style.display = 'block';
+
+    // Charts once (static for sample mode)
+    dashboardMounted = false; // ensure mount
+    showGlobalStats();
+
+    showSampleDataBanner();
+    renderFilterChips();
+    runAndRenderSearch();
+
+    console.log('✅ Sample data loaded:', state.allThreads.length, 'conversations');
+    mixpanel.track('Sample Data Loaded', { conversation_count: state.allThreads.length });
+  } catch (err) {
+    console.error('Failed to load sample data:', err);
+  }
+}
+
+function showSampleDataBanner() {
+  let banner = document.getElementById('sample-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'sample-banner';
+    banner.style.cssText = `
+      background:#fef3c7;border:1px solid #fcd34d;color:#92400e;
+      padding:12px 16px;margin:16px 0;border-radius:8px;text-align:center;
+      font-weight:500;box-shadow:var(--shadow-sm);
+    `;
+    banner.textContent = '📊 Viewing sample data — Upload your files to replace this with your own analytics and conversations.';
+    const header = document.querySelector('header');
+    (header?.parentNode || document.body).insertBefore(banner, header?.nextSibling || null);
+  }
+}
+
+// ---- Show Global Stats (insert AFTER the Extract buttons row) ----
 function showGlobalStats() {
   let statsContainer = $('global-stats-container');
   if (!statsContainer) {
@@ -169,7 +268,6 @@ function showGlobalStats() {
     statsContainer.className = 'container';
   }
 
-  // Insert right AFTER the first .row in Analyze fieldset (the buttons row)
   const analyzeFieldset = extractBtn?.closest('fieldset');
   if (analyzeFieldset) {
     const firstRow = analyzeFieldset.querySelector('.row');
@@ -184,25 +282,37 @@ function showGlobalStats() {
     document.body.appendChild(statsContainer);
   }
 
-  initDashboard({
-    threads: state.allThreads,
-    container: statsContainer,
-    title: `📊 Your Complete GenAI Analytics (${state.allThreads.length} conversations)`
-  });
+  // Mount once per dataset; do not re-render on search/filter
+  if (!dashboardMounted) {
+    initDashboard({
+      threads: state.allThreads,
+      container: statsContainer,
+      title: `📊 Your Complete GenAI Analytics (${state.allThreads.length} conversations)`,
+      statsOverride: state.sampleMode ? DEMO_STATS : null,
+      sampleMode: state.sampleMode === true
+    });
+    dashboardMounted = true;
+  } else {
+    const h2 = statsContainer.querySelector('h2');
+    if (h2) h2.textContent = `📊 Your Complete GenAI Analytics (${state.allThreads.length} conversations)`;
+  }
 }
 
-// ---- Q&A Section (hidden for now, keep data only) ----
+// ---- Q&A Section (hidden for now) ----
 function renderHiddenQAStore(_qaItems) { return; }
 
 // ---- Optional Project List (kept but hidden/disabled) ----
 function renderProjectListHidden() {
   if (projectListContainer) {
-    projectListContainer.style.display = 'none'; // explicitly hide per current product scope
+    projectListContainer.style.display = 'none';
   }
 }
 
 // ---- Main Extract Handler ----
 async function handleExtract() {
+  const banner = document.getElementById('sample-banner');
+  if (banner) banner.remove();
+
   if (!state.files || state.files.length === 0) {
     Toastify({ text: 'Please select file(s) first.', style: { background: '#b91c1c' } }).showToast();
     return;
@@ -213,6 +323,10 @@ async function handleExtract() {
   createDebugPanel();
 
   try {
+    // Real data mode
+    state.sampleMode = false;
+    clearFilters();
+
     // Parse multiple files, merging progressively
     state.allThreads = [];
     let parseResult = null;
@@ -221,7 +335,7 @@ async function handleExtract() {
       const file = state.files[i];
       showStatus(`Processing file ${i + 1}/${state.files.length}: ${file.name}…`, true);
       debugLog(`Processing file ${i + 1}`, { fileName: file.name, fileSize: file.size });
-      parseResult = await parseExport(file, state.allThreads); // parser merges with existing + dedupe
+      parseResult = await parseExport(file, state.allThreads);
       state.allThreads = parseResult.conversations;
       state.uploadHash = parseResult.hash;
     }
@@ -235,7 +349,8 @@ async function handleExtract() {
       searchSection.style.display = 'block';
     }
 
-    // Show global stats (after buttons)
+    // Charts: mount once for the newly uploaded dataset
+    dashboardMounted = false;
     showGlobalStats();
 
     // Q&A (internal only)
@@ -250,16 +365,18 @@ async function handleExtract() {
     state.estimatedPrice = Math.max(5, Math.round(state.allThreads.length * 0.002 * 100));
     showStatus(`Parsed ${state.allThreads.length} conversations.`);
 
-    // Track successful file upload
-    mixpanel.track('File Uploaded', { 
+    mixpanel.track('File Uploaded', {
       file_count: state.files.length,
-      conversation_count: state.allThreads.length 
+      conversation_count: state.allThreads.length
     });
 
-    // Hide/disable projects UI for now
     renderProjectListHidden();
     spotlightContainer.style.display = 'none';
 
+    // Render initial conversations (no filters → show all)
+    renderFilterChips();
+    runAndRenderSearch();
+    
     enableRunButtons(true);
     showStatus('');
   } catch (error) {
@@ -361,7 +478,7 @@ function selectTopKEvidence(threads, K, keywords){
     });
   });
 
-  lines.sort((a,b) => b.score - a.score);
+  lines.sort((a,b) => b.score - a);
   return lines.slice(0, K);
 }
 function normDate(d) {
@@ -652,7 +769,7 @@ function renderFilterChips() {
       const v = decodeURIComponent(btn.getAttribute('data-filter'));
       removeFilter(v);
       renderFilterChips();
-      runAndRenderSearch(); // refresh list
+      runAndRenderSearch();
     });
   });
 }
@@ -662,6 +779,7 @@ const VIRT_CHUNK = 100;
 let virtRendered = 0;
 let virtResultsCache = [];
 
+// Results renderer
 function renderResults(results) {
   const resultsList = document.getElementById('results-list');
   const searchResultsEl = document.getElementById('search-results');
@@ -741,11 +859,15 @@ function renderResults(results) {
   };
 }
 
+// Search + render (charts remain static; no re-init here)
 function runAndRenderSearch() {
   const dateFilter = document.getElementById('dateFilter');
   const filters = getFilters();
+
+  // AND across all active filters (consistent behavior)
   const results = runSearch(filters, dateFilter ? dateFilter.value : 'all');
-  clearSelections(); // reset selections each new search
+
+  clearSelections();
   renderResults(results);
   updateExportButtons();
 }
@@ -809,49 +931,33 @@ function openModalWithConversation(conv) {
   }).join('');
   modal.style.display = 'flex';
 
-  // make the dialog visible to assistive tech
   modal.removeAttribute('aria-hidden');
-
-  // optional: prevent interaction with everything behind the modal
   document.querySelectorAll('body > *:not(#conv-modal)').forEach(el => {
     try { el.inert = true; } catch {}
   });
-
-  // focus management to avoid aria-hidden warnings
   setTimeout(() => closeBtn?.focus(), 0);
 }
 function closeModal() {
   const modal = $('conv-modal');
   if (!modal) return;
-
-  // hide visually
   modal.style.display = 'none';
-
-  // hide from assistive tech while closed
   modal.setAttribute('aria-hidden', 'true');
-
-  // re-enable background interactivity
   document.querySelectorAll('body > *').forEach(el => {
     try { el.inert = false; } catch {}
   });
-
-  // return focus to search input for good UX
   document.getElementById('searchInput')?.focus();
 }
 
 // ---- Event Wiring ----
 function wire() {
-  // Hide legacy report buttons (UI only)
   hideLegacyReportUI();
 
-  // Upload button opens file dialog
   if (uploadBtn) {
     uploadBtn.addEventListener('click', () => {
       if (fileInput) fileInput.click();
     });
   }
 
-  // File input handler — show file names clearly (separate label area so buttons don't move)
   if (fileInput) {
     fileInput.setAttribute('multiple', 'multiple');
     fileInput.addEventListener('change', (e) => {
@@ -862,7 +968,6 @@ function wire() {
     });
   }
 
-  // Drag & Drop over document
   document.addEventListener('dragover', (e) => { e.preventDefault(); });
   document.addEventListener('drop', (e) => {
     if (!e.dataTransfer) return;
@@ -877,11 +982,9 @@ function wire() {
     mergeSelectedFiles(accepted);
   });
 
-  // Main buttons
   if (extractBtn) extractBtn.addEventListener('click', handleExtract);
   if (processBtn) processBtn.addEventListener('click', handleProcessReport);
 
-  // Debug panel toggle (Ctrl+Shift+D)
   document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.shiftKey && e.key === 'D') {
       state.debugMode = !state.debugMode;
@@ -900,7 +1003,6 @@ function wire() {
   const searchInput = document.getElementById('searchInput');
   const dateFilter = document.getElementById('dateFilter');
 
-  // Add filter on click
   if (searchBtn && searchInput) {
     searchBtn.addEventListener('click', () => {
       const q = searchInput.value.trim();
@@ -915,7 +1017,6 @@ function wire() {
     });
   }
 
-  // Add filter on Enter
   if (searchInput) {
     searchInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
@@ -925,12 +1026,10 @@ function wire() {
     });
   }
 
-  // Re-run search when date changes
   if (dateFilter) {
     dateFilter.addEventListener('change', runAndRenderSearch);
   }
 
-  // Select all / clear selections
   document.getElementById('selectAllBtn')?.addEventListener('click', () => {
     document.querySelectorAll('#results-list input[type="checkbox"]').forEach(cb => {
       cb.checked = true;
@@ -944,13 +1043,12 @@ function wire() {
     updateExportButtons();
   });
 
-  // Export handlers (use readable default filenames)
+  // Exports
   document.getElementById('exportJsonBtn')?.addEventListener('click', () => {
     const checkedIds = Array.from(document.querySelectorAll('#results-list input[type="checkbox"]:checked'))
       .map(cb => cb.dataset.convId);
 
-    setSelections(checkedIds); // sync UI → module selection
-
+    setSelections(checkedIds);
     const json = exportAsJSON();
     if (!json) {
       Toastify({ text: 'Select at least one conversation to export', style: { background: '#f59e0b' } }).showToast();
@@ -965,8 +1063,7 @@ function wire() {
     const checkedIds = Array.from(document.querySelectorAll('#results-list input[type="checkbox"]:checked'))
       .map(cb => cb.dataset.convId);
 
-    setSelections(checkedIds); // sync UI → module selection
-
+    setSelections(checkedIds);
     const html = exportAsHTML();
     if (!html) {
       Toastify({ text: 'Select at least one conversation to export', style: { background: '#f59e0b' } }).showToast();
@@ -974,39 +1071,40 @@ function wire() {
     }
     downloadFile(html, getDefaultFilename('html', 'Claude-GPT-merge'), 'text/html;charset=utf-8');
     Toastify({ text: 'HTML exported successfully', style: { background: '#10b981' } }).showToast();
-     mixpanel.track('Data Exported', { format: 'HTML', count: checkedIds.length });
+    mixpanel.track('Data Exported', { format: 'HTML', count: checkedIds.length });
   });
 
-  // NEW: CSV export (make sure you add a button with id="exportCsvBtn" in index.html)
   document.getElementById('exportCsvBtn')?.addEventListener('click', () => {
     const checkedIds = Array.from(document.querySelectorAll('#results-list input[type="checkbox"]:checked'))
       .map(cb => cb.dataset.convId);
 
-    setSelections(checkedIds); // sync UI → module selection
-
+    setSelections(checkedIds);
     const csv = exportAsCSV();
     if (!csv) {
       Toastify({ text: 'Select at least one conversation to export', style: { background: '#f59e0b' } }).showToast();
       return;
     }
-    // CSV returns with BOM for Excel compatibility
     downloadFile(csv, getDefaultFilename('csv', 'Claude-GPT-merge'), 'text/csv;charset=utf-8');
     Toastify({ text: 'CSV exported successfully', style: { background: '#10b981' } }).showToast();
-     mixpanel.track('Data Exported', { format: 'CSV', count: checkedIds.length });
+    mixpanel.track('Data Exported', { format: 'CSV', count: checkedIds.length });
   });
 
-  // Initial filters bar render
   renderFilterChips();
 }
 
 // ---- App Startup ----
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', wire);
-} else {
+async function initializeApp() {
+  await loadSampleData();
   wire();
 }
 
-// Keep listener for review UI → PTR bridge (kept for future when Projects UI returns)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}
+
+// Keep listener for review UI → PTR bridge
 window.addEventListener('cluster-review:generate', (e) => {
   try {
     const { name, threadIndices } = e.detail || {};

@@ -79,9 +79,32 @@ export function search(filtersOrQuery = activeFilters, dateFilter = 'all') {
   }
 
   if (filters.length === 0) {
-    searchResults = [];
-    return searchResults;
-  }
+  // No filters = show ALL conversations (subject to date filter only)
+  const now = new Date();
+  const all = [];
+
+  allConversations.forEach((conv) => {
+    if (dateFilter !== 'all') {
+      const convDate = conv.created_at instanceof Date ? conv.created_at : new Date(conv.created_at);
+      const daysDiff = (now - convDate) / (24 * 60 * 60 * 1000);
+      if (dateFilter === '30' && daysDiff > 30) return;
+      if (dateFilter === '90' && daysDiff > 90) return;
+      if (dateFilter === '365' && daysDiff > 365) return;
+    }
+    all.push(conv);
+  });
+
+  // Nice default ordering when there are no filters: newest first
+  all.sort((a, b) => {
+    const da = a.created_at instanceof Date ? a.created_at : new Date(a.created_at);
+    const db = b.created_at instanceof Date ? b.created_at : new Date(b.created_at);
+    return db - da; // descending
+  });
+
+  searchResults = all;
+  return searchResults;
+}
+
 
   const now = new Date();
   const results = [];
@@ -137,6 +160,17 @@ export function search(filtersOrQuery = activeFilters, dateFilter = 'all') {
 }
 
 // ============ Filters (for UI pill management) ============
+
+export function addFilters(phrases = []) {
+  (phrases || []).forEach(p => addFilter(p));
+  return getFilters();
+}
+
+export function setFilters(phrases = []) {
+  activeFilters = [];
+  (phrases || []).forEach(p => addFilter(p));
+  return getFilters();
+}
 
 export function addFilter(phrase) {
   const p = (phrase || '').trim();

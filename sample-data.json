@@ -1,0 +1,711 @@
+{
+  "conversations": [
+    {
+      "id": "sample_1",
+      "title": "React useEffect cleanup",
+      "created_at": "2024-09-15T10:30:00Z",
+      "updated_at": "2024-09-15T10:32:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "How do I properly cleanup useEffect in React?",
+          "created_at": "2024-09-15T10:30:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "You can cleanup useEffect by returning a cleanup function. Here's the pattern:\n\n```javascript\nuseEffect(() => {\n  const subscription = something.subscribe();\n  \n  return () => {\n    subscription.unsubscribe();\n  };\n}, []);\n```\n\nThe cleanup function runs when the component unmounts or before the effect runs again.",
+          "created_at": "2024-09-15T10:31:30Z"
+        },
+        {
+          "role": "user",
+          "text": "Perfect, thanks!",
+          "created_at": "2024-09-15T10:32:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_2",
+      "title": "Python list comprehension vs map",
+      "created_at": "2024-09-14T14:15:00Z",
+      "updated_at": "2024-09-14T14:17:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "When should I use list comprehension vs map() in Python?",
+          "created_at": "2024-09-14T14:15:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Here's when to use each:\n\n**List comprehension** - More Pythonic, readable for simple transformations:\n```python\nsquares = [x**2 for x in range(10)]\n```\n\n**map()** - Better for applying existing functions, lazy evaluation:\n```python\nsquares = map(lambda x: x**2, range(10))\n```\n\nList comprehension is generally preferred in Python for readability.",
+          "created_at": "2024-09-14T14:16:45Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_3",
+      "title": "SQL JOIN types explanation",
+      "created_at": "2024-09-13T09:45:00Z",
+      "updated_at": "2024-09-13T09:48:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "Can you explain the different types of SQL JOINs?",
+          "created_at": "2024-09-13T09:45:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Sure! Here are the main JOIN types:\n\n**INNER JOIN** - Returns only matching records from both tables\n**LEFT JOIN** - Returns all records from left table + matches from right\n**RIGHT JOIN** - Returns all records from right table + matches from left\n**FULL OUTER JOIN** - Returns all records from both tables\n\nINNER JOIN is most common, LEFT JOIN is very useful for optional relationships.",
+          "created_at": "2024-09-13T09:47:30Z"
+        },
+        {
+          "role": "user",
+          "text": "Which one should I use for getting users and their optional profile data?",
+          "created_at": "2024-09-13T09:47:45Z"
+        },
+        {
+          "role": "assistant",
+          "text": "LEFT JOIN! You want all users (left table) and their profile data when it exists (right table):\n\n```sql\nSELECT u.name, p.bio, p.avatar\nFROM users u\nLEFT JOIN profiles p ON u.id = p.user_id;\n```\n\nThis returns all users, with NULL profile fields for users without profiles.",
+          "created_at": "2024-09-13T09:48:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_4",
+      "title": "Git rebase vs merge",
+      "created_at": "2024-09-12T16:20:00Z",
+      "updated_at": "2024-09-12T16:22:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "What's the difference between git rebase and git merge?",
+          "created_at": "2024-09-12T16:20:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Key differences:\n\n**Merge** - Creates a merge commit, preserves branch history:\n- Keeps complete project history\n- Shows when branches were integrated\n- Safe, non-destructive\n\n**Rebase** - Replays commits on top of target branch:\n- Creates linear, clean history\n- Appears as if work was done sequentially\n- Rewrites commit history (don't rebase shared branches!)\n\nUse merge for feature branches, rebase for cleaning up local work before pushing.",
+          "created_at": "2024-09-12T16:21:45Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_5",
+      "title": "CSS Grid vs Flexbox",
+      "created_at": "2024-09-11T11:30:00Z",
+      "updated_at": "2024-09-11T11:33:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "When should I use CSS Grid vs Flexbox?",
+          "created_at": "2024-09-11T11:30:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Here's the breakdown:\n\n**Flexbox** - One-dimensional layouts:\n- Navigation bars\n- Button groups\n- Centering content\n- Distributing space along one axis\n\n**CSS Grid** - Two-dimensional layouts:\n- Page layouts\n- Card grids\n- Complex positioning\n- When you need rows AND columns\n\nRule of thumb: Flexbox for components, Grid for layout.",
+          "created_at": "2024-09-11T11:32:30Z"
+        },
+        {
+          "role": "user",
+          "text": "Perfect, that makes sense!",
+          "created_at": "2024-09-11T11:33:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_6",
+      "title": "Marketing campaign budget allocation",
+      "created_at": "2024-09-05T11:45:00Z",
+      "updated_at": "2024-09-05T11:48:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "How should I allocate a $10,000 marketing budget for a new SaaS product?",
+          "created_at": "2024-09-05T11:45:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Here's a balanced allocation for SaaS:\n\n**Digital channels (80%):**\n- Google Ads: $3,000 (30%)\n- Content marketing: $2,000 (20%)\n- Social media ads: $1,500 (15%)\n- Email marketing: $500 (5%)\n- SEO tools: $1,000 (10%)\n\n**Other (20%):**\n- Events/webinars: $1,000 (10%)\n- Influencer partnerships: $1,000 (10%)\n\nStart with search ads for immediate results, then build content for long-term growth.",
+          "created_at": "2024-09-05T11:47:30Z"
+        }
+      ]
+    },
+    {
+  "id": "sample_16",
+  "title": "Marketing strategy framework for a D2C launch",
+  "created_at": "2024-09-10T12:00:00Z",
+  "updated_at": "2024-09-10T12:06:00Z",
+  "messages": [
+    {
+      "role": "user",
+      "text": "I need a clear marketing strategy for a D2C skincare launch. What framework should I use?",
+      "created_at": "2024-09-10T12:00:00Z"
+    },
+    {
+      "role": "assistant",
+      "text": "Use a simple 4-part marketing strategy: (1) Positioning & ICP, (2) Acquisition channels, (3) Content & offers, (4) Measurement. Start with a 90-day strategy that prioritizes 1–2 core channels.",
+      "created_at": "2024-09-10T12:06:00Z"
+    }
+  ]
+},
+{
+  "id": "sample_17",
+  "title": "Interview preparation checklist + follow-up email timing",
+  "created_at": "2024-09-09T15:30:00Z",
+  "updated_at": "2024-09-09T15:36:00Z",
+  "messages": [
+    {
+      "role": "user",
+      "text": "I have an interview tomorrow. Can you give me a quick preparation checklist and advice on a follow-up email?",
+      "created_at": "2024-09-09T15:30:00Z"
+    },
+    {
+      "role": "assistant",
+      "text": "Interview prep: research the company, review role & projects, prep 3 stories (STAR), 3 questions, and a 60-second intro. Send a follow-up email within 24 hours that thanks them, reiterates fit, and references a specific discussion point.",
+      "created_at": "2024-09-09T15:36:00Z"
+    }
+  ]
+},
+{
+  "id": "sample_7",
+      "title": "401k vs Roth IRA differences",
+      "created_at": "2024-09-04T16:20:00Z",
+      "updated_at": "2024-09-04T16:23:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "What's the difference between a 401k and Roth IRA?",
+          "created_at": "2024-09-04T16:20:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Key differences:\n\n**401(k):**\n- Employer-sponsored\n- Higher contribution limits ($23,000 in 2024)\n- Often includes employer matching\n- Pre-tax contributions (traditional) or after-tax (Roth 401k)\n\n**Roth IRA:**\n- Individual account\n- Lower limits ($7,000 in 2024)\n- After-tax contributions, tax-free withdrawals in retirement\n- More investment flexibility\n- Income limits apply\n\nIdeal: Max employer 401k match first, then Roth IRA, then remaining 401k space.",
+          "created_at": "2024-09-04T16:22:45Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_8",
+      "title": "Understanding cryptocurrency basics",
+      "created_at": "2024-08-25T10:15:00Z",
+      "updated_at": "2024-08-25T10:19:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "Can you explain Bitcoin and cryptocurrency in simple terms?",
+          "created_at": "2024-08-25T10:15:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Think of cryptocurrency as digital money:\n\n**Bitcoin basics:**\n- Digital currency stored on computers (not banks)\n- Limited supply (21 million Bitcoin total)\n- Transactions recorded on \"blockchain\" (public ledger)\n- No central authority controls it\n\n**Key differences from regular money:**\n- Decentralized (no government/bank control)\n- Highly volatile (price swings wildly)\n- Global (works anywhere)\n- Irreversible transactions\n\n**Investment perspective:**\n- Very risky, speculative asset\n- Only invest what you can afford to lose\n- Many experts suggest 5-10% max of portfolio\n\nIt's more like digital gold than everyday spending money right now.",
+          "created_at": "2024-08-25T10:18:30Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_9",
+      "title": "Best time to visit Japan",
+      "created_at": "2024-09-06T14:30:00Z",
+      "updated_at": "2024-09-06T14:33:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "When is the best time to visit Japan for cherry blossoms?",
+          "created_at": "2024-09-06T14:30:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Cherry blossom season in Japan varies by region:\n\n**Best timing:**\n- Tokyo/Kyoto: Late March to early May\n- Osaka: Late March to mid-April\n- Northern areas: May\n\n**Peak bloom:** Usually 1-2 weeks in early April\n\n**Tips:**\n- Book accommodations early (very popular season)\n- Weather can be unpredictable\n- Consider visiting multiple cities to catch different blooming times",
+          "created_at": "2024-09-06T14:32:45Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_10",
+      "title": "Budget-friendly meal prep ideas",
+      "created_at": "2024-08-26T12:30:00Z",
+      "updated_at": "2024-08-26T12:33:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "I want to start meal prepping to save money. What are some cheap, healthy options?",
+          "created_at": "2024-08-26T12:30:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Budget-friendly staples:\n\n**Protein bases:**\n- Chicken thighs (cheaper than breasts)\n- Eggs\n- Beans and lentils\n- Canned tuna\n\n**Bulk carbs:**\n- Rice, quinoa, sweet potatoes\n- Oats for breakfast\n\n**Vegetables:**\n- Frozen vegetables (often more nutritious than fresh)\n- Seasonal produce\n- Carrots, onions, cabbage (long-lasting)\n\n**Sample week:** Chicken thigh bowls with rice and vegetables costs ~$3 per meal vs $12+ for takeout!",
+          "created_at": "2024-08-26T12:32:45Z"
+        },
+        {
+          "role": "user",
+          "text": "Perfect! I'll start with the chicken bowls this week.",
+          "created_at": "2024-08-26T12:33:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_11",
+      "title": "Writing a professional follow-up email",
+      "created_at": "2024-09-07T09:15:00Z",
+      "updated_at": "2024-09-07T09:18:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "I need to write a follow-up email after a job interview. What should I include?",
+          "created_at": "2024-09-07T09:15:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Here's a professional follow-up template:\n\n**Subject:** Thank you - [Position Title] Interview\n\n**Body:**\n- Thank them for their time\n- Mention specific conversation points\n- Reiterate your interest\n- Offer to provide additional information\n- Professional closing\n\nSend within 24 hours. Keep it concise but personal.",
+          "created_at": "2024-09-07T09:17:30Z"
+        },
+        {
+          "role": "user",
+          "text": "Perfect, that's exactly what I needed!",
+          "created_at": "2024-09-07T09:18:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_12",
+      "title": "Home workout routine for beginners",
+      "created_at": "2024-08-21T07:00:00Z",
+      "updated_at": "2024-08-21T07:25:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "I want to start working out at home but don't have any equipment. What's a good beginner routine?",
+          "created_at": "2024-08-21T07:00:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Bodyweight exercises are incredibly effective for beginners. Here's a simple 3-day routine:\n\n**Day 1 & 3: Upper Body**\n- Push-ups (modified on knees if needed): 3 sets of 8-12\n- Pike push-ups (for shoulders): 2 sets of 5-8\n- Tricep dips (using chair): 3 sets of 8-12\n- Plank: 3 sets of 20-30 seconds\n\n**Day 2: Lower Body**\n- Bodyweight squats: 3 sets of 12-15\n- Lunges (each leg): 3 sets of 8-10\n- Glute bridges: 3 sets of 12-15\n- Wall sit: 3 sets of 20-30 seconds\n\n**Rest 1 day between workouts**\n\nStart with 2-3 exercises per session and gradually add more. Focus on proper form over speed or quantity!\n\nHow many days per week were you thinking of working out?",
+          "created_at": "2024-08-21T07:03:00Z"
+        },
+        {
+          "role": "user",
+          "text": "I was thinking 3 days a week to start. How long should each workout session be?",
+          "created_at": "2024-08-21T07:04:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Perfect! 3 days a week is ideal for beginners - gives your muscles time to recover and adapt.\n\n**Session duration:**\n- **Beginner:** 20-30 minutes total\n- **As you progress:** 30-45 minutes\n\n**Time breakdown:**\n- **Warm-up:** 5 minutes (light cardio, arm circles, leg swings)\n- **Main workout:** 15-20 minutes (the exercises I listed)\n- **Cool-down:** 5 minutes (stretching, deep breathing)\n\n**Weekly schedule example:**\n- Monday: Upper body\n- Tuesday: Rest or light walk\n- Wednesday: Lower body  \n- Thursday: Rest\n- Friday: Upper body\n- Weekend: Rest or fun activities (hiking, dancing, etc.)\n\nThe key is consistency over intensity at first!",
+          "created_at": "2024-08-21T07:08:00Z"
+        },
+        {
+          "role": "user",
+          "text": "What about cardio? Should I include that in these workouts or do it separately?",
+          "created_at": "2024-08-21T07:09:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "You can do both - depends on your goals and time availability:\n\n**Option 1: Integrated (my recommendation for beginners)**\n- Add 5-10 minutes of cardio at the end of strength sessions\n- Examples: Jumping jacks, high knees, mountain climbers, burpees\n- Keeps workouts efficient and builds endurance\n\n**Option 2: Separate cardio days**\n- Monday: Upper body strength\n- Tuesday: 20-30 min cardio (walk, jog, dance video)\n- Wednesday: Lower body strength\n- Thursday: Cardio\n- Friday: Upper body strength\n- Weekend: Active recovery\n\n**Beginner-friendly cardio options:**\n- Brisk walking (outdoors or in place)\n- YouTube workout videos (fitness blender, yoga with adriene)\n- Dancing to music\n- Stair climbing\n- Jump rope (if you have one)\n\n**Start simple:** Just add 5 minutes of walking in place or jumping jacks after your strength routine. As you get fitter, you can extend or add dedicated cardio days.\n\nWhat type of cardio sounds most appealing to you?",
+          "created_at": "2024-08-21T07:13:00Z"
+        },
+        {
+          "role": "user",
+          "text": "I think I'll start with integrated cardio and maybe add walking on rest days. How do I track progress without a gym?",
+          "created_at": "2024-08-21T07:14:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Smart approach! Tracking progress at home is actually easier than you might think:\n\n**Performance tracking:**\n- **Rep progression:** Week 1: 8 push-ups → Week 4: 15 push-ups\n- **Time improvements:** Plank 20 seconds → 60 seconds\n- **Form upgrades:** Knee push-ups → Full push-ups\n- **Workout completion:** \"I finished the whole routine without stopping!\"\n\n**Simple tracking methods:**\n- **Phone notes app:** Date, exercises, reps completed\n- **Fitness apps:** MyFitnessPal, Strong, or even a basic calendar\n- **Paper workout log:** Old school but effective\n\n**Body measurements (monthly):**\n- Weight (if you have a scale)\n- Body measurements (waist, arms, thighs)\n- Progress photos (same pose, same lighting)\n- How clothes fit\n\n**Energy & mood tracking:**\n- Sleep quality improvements\n- Energy levels throughout the day\n- Mood and confidence boost\n- Daily activities feeling easier\n\n**Weekly check-ins:**\n- What felt easier this week?\n- Which exercises improved?\n- How's my motivation?\n- Any soreness or form issues?\n\n**Milestone celebrations:**\n- First full push-up\n- 1-minute plank\n- Completing workout without breaks\n- Feeling stronger in daily activities\n\nThe most important metric: consistency! Showing up 3x per week is more valuable than perfect performance.",
+          "created_at": "2024-08-21T07:18:00Z"
+        },
+        {
+          "role": "user",
+          "text": "This is really comprehensive! I feel ready to start. Any final tips for staying motivated?",
+          "created_at": "2024-08-21T07:20:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "You've got this! Here are my top motivation strategies:\n\n**Set yourself up for success:**\n- **Start small:** Better to do 10 minutes consistently than 45 minutes once\n- **Same time, same place:** Build a routine your brain expects\n- **Prepare the night before:** Lay out workout clothes\n- **No zero days:** Even 5 minutes counts as a win\n\n**Mental strategies:**\n- **Track streaks:** \"I've worked out 3 days in a row!\"\n- **Focus on how you feel after:** Remember that post-workout energy boost\n- **Find accountability:** Tell a friend or family member your plan\n- **Celebrate small wins:** Reward yourself for weekly consistency\n\n**When motivation dips (it will!):**\n- Remember why you started\n- Do just 5 minutes (usually leads to more)\n- Change up the routine to keep it fresh\n- Focus on the habit, not the results\n\n**Reality check:** Week 2-3 might feel hard. That's normal! Your body is adapting. Push through those 2-3 weeks and it becomes much easier.\n\n**Final tip:** Take a \"before\" photo today. In 6 weeks, you'll be amazed at the changes - not just physical, but in confidence and energy!\n\nYou're making a fantastic investment in yourself. Start tomorrow and check in with how you feel after week 1!",
+          "created_at": "2024-08-21T07:25:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_13",
+      "title": "Setting up a small business bookkeeping system",
+      "created_at": "2024-08-20T11:30:00Z",
+      "updated_at": "2024-08-20T12:15:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "I just started a freelance consulting business and need to set up bookkeeping. What's the simplest way to track income and expenses?",
+          "created_at": "2024-08-20T11:30:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Good bookkeeping from day one will save you massive headaches later. Here's a simple system:\n\n**Essential accounts to track:**\n- Business checking account (separate from personal!)\n- Income categories (consulting fees, project work)\n- Expense categories (software, travel, meals, office supplies)\n- Tax savings account (set aside 25-30% of income)\n\n**Simple software options:**\n- **QuickBooks Simple Start** ($30/month) - most comprehensive\n- **Wave** (free) - great for freelancers\n- **FreshBooks** ($17/month) - excellent for client invoicing\n- **Spreadsheet** (free) - if you prefer DIY\n\n**Monthly routine:**\n1. Categorize all transactions\n2. Reconcile bank accounts\n3. Send invoices promptly\n4. Review profit/loss\n5. Set aside tax money\n\nWhat type of consulting do you do? This will help me suggest specific expense categories to track.",
+          "created_at": "2024-08-20T11:33:00Z"
+        },
+        {
+          "role": "user",
+          "text": "I do marketing strategy consulting for small businesses. Most of my work is remote with occasional client visits.",
+          "created_at": "2024-08-20T11:35:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Perfect! Marketing consulting has pretty straightforward bookkeeping needs. Here are your key categories:\n\n**Income categories:**\n- Strategy consulting fees\n- Project-based work\n- Retainer payments\n- Workshop/training fees (if applicable)\n\n**Business expense categories:**\n- **Software subscriptions** (analytics tools, design software, CRM)\n- **Client travel** (mileage, flights, hotels, meals)\n- **Professional development** (courses, conferences, certifications)\n- **Office expenses** (home office supplies, internet, phone)\n- **Marketing your business** (website, networking events)\n- **Professional services** (accountant, lawyer, business insurance)\n\n**Important tax considerations:**\n- **Home office deduction** - measure your dedicated workspace\n- **Business meals** - 50% deductible when with clients\n- **Vehicle expenses** - track business mileage carefully\n- **Equipment purchases** - laptop, software, furniture\n\n**Monthly invoicing system:**\n- Send invoices immediately upon project completion\n- Include clear payment terms (Net 15 or Net 30)\n- Follow up on overdue invoices professionally\n- Consider requiring 50% upfront for larger projects\n\nHow many clients are you typically working with at once?",
+          "created_at": "2024-08-20T11:40:00Z"
+        },
+        {
+          "role": "user",
+          "text": "Usually 3-4 clients at a time, mix of monthly retainers and project work. Should I track profitability by client?",
+          "created_at": "2024-08-20T11:42:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Absolutely! Client profitability tracking is crucial for consulting businesses. It'll show you which clients are actually profitable vs just keeping you busy.\n\n**Client profitability setup:**\n\n**Revenue per client:**\n- Monthly retainer amounts\n- Project fees\n- Any additional work/overages\n\n**Costs per client:**\n- Time spent (track hourly, even on retainers)\n- Direct expenses (travel to their location, tools bought specifically for them)\n- Opportunity cost (time you could spend on higher-paying work)\n\n**Key metrics to calculate:**\n- **Hourly rate by client** = Total revenue ÷ Hours worked\n- **Profit margin by client** = (Revenue - Direct costs) ÷ Revenue\n- **Client lifetime value** = Average monthly value × Average relationship length\n\n**Simple tracking method:**\n- Use project/class features in QuickBooks or Wave\n- Create a client for each business\n- Assign all income and direct expenses to specific clients\n- Run monthly profitability reports\n\n**What you'll discover:**\n- Which clients pay best for your time\n- Which clients have scope creep issues\n- Which types of projects are most profitable\n- When to raise rates or fire difficult clients\n\n**Pro tip:** Track your time even on retainer clients. You might find some \"monthly retainers\" actually pay less per hour than project work!",
+          "created_at": "2024-08-20T11:47:00Z"
+        },
+        {
+          "role": "user",
+          "text": "That makes total sense! What about quarterly taxes? How much should I be setting aside?",
+          "created_at": "2024-08-20T11:48:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Quarterly taxes catch many new freelancers off guard. Here's your game plan:\n\n**Tax rate to save (rough estimates):**\n- **Federal income tax:** 12-22% (depends on total income)\n- **Self-employment tax:** 15.3% (Social Security + Medicare)\n- **State tax:** 0-13% (varies by state)\n- **Total to save:** 25-35% of gross income\n\n**Conservative approach:** Set aside 30% of every payment immediately. Better to have too much than too little!\n\n**Quarterly payment schedule (2024):**\n- Q1: Due April 15, 2024\n- Q2: Due June 17, 2024\n- Q3: Due September 16, 2024\n- Q4: Due January 15, 2025\n\n**How to calculate quarterly payments:**\n- Estimate annual income\n- Calculate expected tax owed\n- Divide by 4 for quarterly amount\n- Pay via IRS Direct Pay or EFTPS\n\n**Automatic tax savings system:**\n1. Open separate \"Tax Savings\" account\n2. Immediately transfer 30% of each payment\n3. Don't touch this money!\n4. Pay quarterlies from this account\n\n**Pro tip:** If you expect to owe $1,000+ in taxes, you're required to pay quarterly. Missing payments means penalties and interest.\n\n**Consider hiring help:** A CPA for your first year can save you money and stress. They'll help optimize deductions and set up proper systems.",
+          "created_at": "2024-08-20T11:53:00Z"
+        },
+        {
+          "role": "user",
+          "text": "This is incredibly helpful! One last question - any red flags I should avoid that might trigger an audit?",
+          "created_at": "2024-08-20T11:55:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "The IRS looks for certain patterns, but don't let audit fear stop you from taking legitimate deductions. Here's what to watch:\n\n**Common audit triggers:**\n- **Excessive business meals** (claiming 100% of food as business)\n- **Unrealistic home office deduction** (claiming 50% of home for a desk)\n- **100% business vehicle use** (unless you have a separate personal car)\n- **Large charitable deductions** relative to income\n- **Always profitable or always losing money** (businesses should show profit intent)\n\n**Best practices to stay safe:**\n\n**Documentation is everything:**\n- Keep receipts for all business expenses\n- Log business mileage with dates and purposes\n- Document business meals (who, where, business purpose)\n- Take photos of receipts (they fade!)\n\n**Home office deduction:**\n- Only deduct space used EXCLUSIVELY for business\n- Measure carefully and be conservative\n- Simplified method: $5/sq ft up to 300 sq ft ($1,500 max)\n\n**Business vs personal:**\n- Never mix business and personal expenses\n- Pay yourself a salary, don't just take money randomly\n- Keep personal purchases out of business accounts\n\n**Show profit motive:**\n- Maintain professional business practices\n- Keep good records\n- Show increasing income over time\n- Take business seriously (business plan, marketing efforts)\n\n**Bottom line:** Be honest, keep excellent records, and don't get greedy with deductions. The IRS audits less than 1% of small businesses anyway!",
+          "created_at": "2024-08-20T12:15:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_14",
+      "title": "Planning a career transition into tech",
+      "created_at": "2024-08-19T14:00:00Z",
+      "updated_at": "2024-08-19T15:30:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "I'm currently in finance but want to transition into tech. I'm 29 and worried I'm too late to start. What's the best path forward?",
+          "created_at": "2024-08-19T14:00:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "You're definitely not too late! 29 is actually a great age for a tech transition - you have professional experience and maturity that many younger candidates lack. Here's your strategic approach:\n\n**Assess your transferable skills:**\n- **Finance background** = strong analytical thinking, data comfort, problem-solving\n- **Business understanding** = valuable for product management, business analysis\n- **Communication skills** = essential for tech roles beyond pure coding\n\n**Popular tech transition paths from finance:**\n1. **Data Analysis/Science** (leverages your analytical skills)\n2. **Product Management** (combines business + tech)\n3. **Business Analysis** (bridge between business and tech teams)\n4. **Software Development** (if you enjoy problem-solving)\n5. **Cybersecurity** (growing field, values diverse backgrounds)\n\n**Before choosing a path:**\n- What aspects of finance do you enjoy most?\n- Are you more interested in working with data, people, or building things?\n- Do you prefer technical deep-dives or strategic overview?\n- What's your timeline for making the switch?\n\nThis will help me recommend the most suitable path and learning strategy.",
+          "created_at": "2024-08-19T14:03:00Z"
+        },
+        {
+          "role": "user",
+          "text": "I really enjoy analyzing data and finding insights that drive business decisions. I've worked a lot with Excel and some basic SQL. Product management also sounds interesting.",
+          "created_at": "2024-08-19T14:05:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Your data analysis interest and existing SQL skills give you a huge head start. Both data analysis and product management are excellent choices for finance professionals. Let me break down both paths:\n\n**Data Analysis Path (easier transition):**\n\n**Skills to develop:**\n- **Advanced SQL** (joins, window functions, CTEs)\n- **Python/R** for data manipulation (Pandas, NumPy)\n- **Data visualization** (Tableau, Power BI, or Python/matplotlib)\n- **Statistics** (A/B testing, hypothesis testing)\n\n**Timeline:** 6-9 months to job-ready\n**Entry roles:** Data Analyst, Business Analyst, Marketing Analyst\n**Salary range:** $65K-90K starting\n\n**Product Management Path (longer transition):**\n\n**Skills to develop:**\n- **Technical literacy** (APIs, databases, software development basics)\n- **User research** and customer empathy\n- **Agile/Scrum methodology**\n- **Product strategy** and roadmap planning\n- **Cross-functional communication**\n\n**Timeline:** 12-18 months for career change\n**Entry roles:** Associate Product Manager, Business Analyst → PM\n**Salary range:** $80K-120K starting\n\n**My recommendation:** Start with data analysis skills (SQL + Python) since you already have the foundation. This can lead to either path and gives you concrete skills to showcase quickly.\n\nWhich timeline feels more realistic for your situation?",
+          "created_at": "2024-08-19T14:10:00Z"
+        },
+        {
+          "role": "user",
+          "text": "I think the data analysis path makes more sense to start. I have about 2 hours per day to dedicate to learning. What's a specific learning plan?",
+          "created_at": "2024-08-19T14:12:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "2 hours/day is perfect for a structured learning plan. Here's your 6-month roadmap:\n\n**Month 1-2: SQL Mastery**\n- **Week 1-2:** SQL basics review (SELECT, WHERE, GROUP BY)\n- **Week 3-4:** Intermediate SQL (JOINs, subqueries)\n- **Week 5-6:** Advanced SQL (window functions, CTEs, temp tables)\n- **Week 7-8:** Real-world SQL practice with datasets\n\n**Resources:**\n- SQLBolt (free, interactive)\n- Mode Analytics SQL Tutorial\n- HackerRank SQL challenges\n- Practice with real datasets (Kaggle)\n\n**Month 3-4: Python for Data Analysis**\n- **Week 9-10:** Python basics (variables, loops, functions)\n- **Week 11-12:** Pandas for data manipulation\n- **Week 13-14:** Data cleaning and transformation\n- **Week 15-16:** Combining Python + SQL workflows\n\n**Resources:**\n- Python.org tutorial\n- \"Python for Data Analysis\" by Wes McKinney\n- DataCamp Python track\n- Jupyter notebooks for practice\n\n**Month 5-6: Visualization + Portfolio**\n- **Week 17-18:** Tableau or Power BI fundamentals\n- **Week 19-20:** Advanced visualization techniques\n- **Week 21-22:** Build 2-3 portfolio projects\n- **Week 23-24:** Resume building and job applications\n\n**Daily 2-hour breakdown:**\n- **60 minutes:** Learning new concepts\n- **45 minutes:** Hands-on practice\n- **15 minutes:** Review and note-taking\n\nSound manageable?",
+          "created_at": "2024-08-19T14:17:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_15",
+      "title": "Complete guide to buying your first home",
+      "created_at": "2024-08-18T09:00:00Z",
+      "updated_at": "2024-08-18T12:30:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "My partner and I are thinking about buying our first home. We have about $60,000 saved and make $140,000 combined annually. Where do we even start?",
+          "created_at": "2024-08-18T09:00:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "With $60K saved and $140K income, you're in a strong position. Let's break down the home buying process step by step:\n\n**Step 1: Financial readiness check**\n- Emergency fund: Keep 3-6 months expenses separate from house fund\n- Down payment: 20% avoids PMI, but you can go as low as 3-5%\n- Closing costs: 2-5% of purchase price\n- Monthly housing budget: Max 28% of gross income = ~$3,267/month\n\n**Your budget estimate:**\n- With 20% down ($60K) = $300K house\n- With 10% down ($30K) = $300K house + PMI\n- Keep $10-15K for closing costs and moving\n\n**Step 2: Get pre-approved**\n- Shop with 3+ lenders for rates\n- Provides realistic budget\n- Shows sellers you're serious\n\n**Step 3: Find a real estate agent**\n- Interview 2-3 agents\n- Look for first-time buyer experience\n- Check recent sales in your target area\n\nWhat's your target area and timeline for buying?",
+          "created_at": "2024-08-18T09:05:00Z"
+        },
+        {
+          "role": "user",
+          "text": "We're looking in the suburbs of Chicago, ideally within 30 minutes of downtown. Timeline is flexible but hoping to buy within 6-12 months. Should we wait to save more for a larger down payment?",
+          "created_at": "2024-08-18T09:07:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Chicago suburbs are a great choice! The down payment decision depends on several factors. Let me break down the pros and cons:\n\n**20% down payment benefits:**\n- No PMI (saves $200-400/month on a $300K house)\n- Better interest rates\n- Stronger offers in competitive markets\n- More equity from day one\n\n**Lower down payment benefits:**\n- Get into the market sooner\n- Keep more cash for emergencies/renovations\n- Benefit from appreciation while renting costs rise\n- PMI can be removed once you hit 20% equity\n\n**Chicago market considerations:**\n- **Competitive market:** 20% down makes offers stronger\n- **Property taxes:** High in Chicago area (factor into monthly payment)\n- **Seasonal patterns:** Spring/summer more competitive, winter better deals\n\n**My recommendation for your situation:**\nWith $60K saved, put down 15-20% and keep $15K for:\n- Closing costs ($8-12K)\n- Emergency fund ($5-10K)\n- Immediate home expenses (inspection, moving, initial repairs)\n\n**Timeline strategy:**\n- **Next 3 months:** Get pre-approved, find agent, start looking\n- **Months 4-6:** Serious house hunting\n- **Fall/winter:** Potentially better deals, less competition\n\nHave you researched specific suburbs that interest you?",
+          "created_at": "2024-08-18T09:12:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_mb_1",
+      "title": "Setting a marketing budget for Q4",
+      "created_at": "2024-09-10T13:10:00Z",
+      "updated_at": "2024-09-10T13:20:00Z",
+      "messages": [
+        { "role": "user", "text": "We need a marketing budget for Q4 focused on demand gen. What’s a smart split?", "created_at": "2024-09-10T13:10:00Z" },
+        { "role": "assistant", "text": "For a $50k marketing budget: 40% paid search, 25% paid social, 15% content, 10% events, 10% tools. Rebalance monthly based on CAC.", "created_at": "2024-09-10T13:18:00Z" }
+      ]
+    },
+    {
+      "id": "sample_mb_2",
+      "title": "Marketing budget reforecast after price change",
+      "created_at": "2024-09-02T10:00:00Z",
+      "updated_at": "2024-09-02T10:08:00Z",
+      "messages": [
+        { "role": "user", "text": "After our price increase, should the marketing budget shift more to retention?", "created_at": "2024-09-02T10:00:00Z" },
+        { "role": "assistant", "text": "Yes—allocate 20% of the marketing budget to lifecycle/CRM: onboarding emails, win-back flows, and advocacy programs.", "created_at": "2024-09-02T10:06:00Z" }
+      ]
+    },
+    {
+      "id": "sample_mb_3",
+      "title": "Startup launch: marketing budget template",
+      "created_at": "2024-08-29T15:35:00Z",
+      "updated_at": "2024-08-29T15:42:00Z",
+      "messages": [
+        { "role": "user", "text": "Launching a mobile app—can you give me a marketing budget template for the first 90 days?", "created_at": "2024-08-29T15:35:00Z" },
+        { "role": "assistant", "text": "Template: Awareness (35%), Acquisition (45%), ASO/Creative (10%), Analytics (5%), Buffer (5%). Start small, scale winners weekly.", "created_at": "2024-08-29T15:41:00Z" }
+      ]
+    },
+
+    {
+      "id": "sample_sql_1",
+      "title": "SQL: fixing an INNER JOIN returning duplicates",
+      "created_at": "2024-09-09T09:10:00Z",
+      "updated_at": "2024-09-09T09:18:00Z",
+      "messages": [
+        { "role": "user", "text": "My SQL INNER JOIN is returning duplicates. How do I dedupe?", "created_at": "2024-09-09T09:10:00Z" },
+        { "role": "assistant", "text": "Use DISTINCT or aggregate. Often duplicates come from one-to-many joins. Verify keys, or JOIN to a subquery with ROW_NUMBER() = 1.", "created_at": "2024-09-09T09:16:00Z" }
+      ]
+    },
+    {
+      "id": "sample_sql_2",
+      "title": "SQL window functions cheat sheet",
+      "created_at": "2024-09-03T12:00:00Z",
+      "updated_at": "2024-09-03T12:10:00Z",
+      "messages": [
+        { "role": "user", "text": "Quick SQL guide: ROW_NUMBER vs RANK vs DENSE_RANK?", "created_at": "2024-09-03T12:00:00Z" },
+        { "role": "assistant", "text": "ROW_NUMBER gives unique sequence; RANK leaves gaps on ties; DENSE_RANK doesn’t. Use PARTITION BY to scope and ORDER BY to rank.", "created_at": "2024-09-03T12:08:00Z" }
+      ]
+    },
+    {
+      "id": "sample_sql_3",
+      "title": "SQL best practice for reporting layer",
+      "created_at": "2024-08-28T08:45:00Z",
+      "updated_at": "2024-08-28T08:55:00Z",
+      "messages": [
+        { "role": "user", "text": "How should I structure SQL for a reporting layer over our OLTP DB?", "created_at": "2024-08-28T08:45:00Z" },
+        { "role": "assistant", "text": "Create views with stable column names, use CTEs for clarity, and add surrogate date dimensions. Consider ETL to a warehouse for heavy SQL.", "created_at": "2024-08-28T08:53:00Z" }
+      ]
+    },
+
+    {
+      "id": "sample_career_1",
+      "title": "Career change story into product analytics",
+      "created_at": "2024-09-08T17:00:00Z",
+      "updated_at": "2024-09-08T17:10:00Z",
+      "messages": [
+        { "role": "user", "text": "How do I frame my career transition from sales to product analytics?", "created_at": "2024-09-08T17:00:00Z" },
+        { "role": "assistant", "text": "Craft a career narrative: customer empathy → metric ownership. Showcase SQL/experiments portfolio and a 1-pager quant case study.", "created_at": "2024-09-08T17:08:00Z" }
+      ]
+    },
+    {
+      "id": "sample_career_2",
+      "title": "Career growth: IC vs manager track",
+      "created_at": "2024-09-01T19:20:00Z",
+      "updated_at": "2024-09-01T19:28:00Z",
+      "messages": [
+        { "role": "user", "text": "I’m torn between staying IC or pursuing a manager role—career advice?", "created_at": "2024-09-01T19:20:00Z" },
+        { "role": "assistant", "text": "Assess energy drivers: making vs mentoring. Try mentorship, project leadership, and a 90-day plan before committing your career path.", "created_at": "2024-09-01T19:27:00Z" }
+      ]
+    },
+    {
+      "id": "sample_career_3",
+      "title": "Career portfolio for data roles",
+      "created_at": "2024-08-27T13:05:00Z",
+      "updated_at": "2024-08-27T13:12:00Z",
+      "messages": [
+        { "role": "user", "text": "What should I include in a portfolio for a data analyst career?", "created_at": "2024-08-27T13:05:00Z" },
+        { "role": "assistant", "text": "3 projects: SQL analytics case, dashboard with business narrative, and a cohort/retention analysis. Tie insights to decisions and impact.", "created_at": "2024-08-27T13:11:00Z" }
+      ]
+    },
+
+    {
+      "id": "sample_business_1",
+      "title": "Small business pricing experiment",
+      "created_at": "2024-09-11T11:00:00Z",
+      "updated_at": "2024-09-11T11:10:00Z",
+      "messages": [
+        { "role": "user", "text": "For my small business, how do I test tiered pricing without confusing customers?", "created_at": "2024-09-11T11:00:00Z" },
+        { "role": "assistant", "text": "Run a 2-tier A/B for 2 weeks. Keep feature parity; vary bundles/price. Measure conversion, ARPU, refund rate, and business churn impacts.", "created_at": "2024-09-11T11:08:00Z" }
+      ]
+    },
+    {
+      "id": "sample_business_2",
+      "title": "Business plan outline for services firm",
+      "created_at": "2024-09-03T09:40:00Z",
+      "updated_at": "2024-09-03T09:50:00Z",
+      "messages": [
+        { "role": "user", "text": "I need a lean business plan for a design services studio.", "created_at": "2024-09-03T09:40:00Z" },
+        { "role": "assistant", "text": "Outline: problem, positioning, ICP, offers, go-to-market, operations, basic P&L. Keep to 2 pages. Review monthly against business KPIs.", "created_at": "2024-09-03T09:49:00Z" }
+      ]
+    },
+    {
+      "id": "sample_business_3",
+      "title": "Registering a business: LLC vs S-Corp",
+      "created_at": "2024-08-31T10:25:00Z",
+      "updated_at": "2024-08-31T10:35:00Z",
+      "messages": [
+        { "role": "user", "text": "For a new consulting business should I start as an LLC or S-Corp?", "created_at": "2024-08-31T10:25:00Z" },
+        { "role": "assistant", "text": "Start LLC for simplicity; elect S-Corp when profit > ~$60–80k to optimize taxes (reasonable salary + distributions). Consult a CPA.", "created_at": "2024-08-31T10:33:00Z" }
+      ]
+    },
+    {
+      "id": "sample_strategy_1",
+      "title": "Company strategy offsite agenda",
+      "created_at": "2024-09-10T08:30:00Z",
+      "updated_at": "2024-09-10T08:40:00Z",
+      "messages": [
+        { "role": "user", "text": "Help me craft a one-day agenda for our Q1 company strategy offsite.", "created_at": "2024-09-10T08:30:00Z" },
+        { "role": "assistant", "text": "Agenda: 1) Strategy context + metrics, 2) Customer problems, 3) Bet selection, 4) Resourcing, 5) Risks, 6) 90-day plan, 7) Commitments.", "created_at": "2024-09-10T08:38:00Z" }
+      ]
+    },
+    {
+      "id": "sample_strategy_2",
+      "title": "Product strategy: focus vs breadth",
+      "created_at": "2024-09-06T18:20:00Z",
+      "updated_at": "2024-09-06T18:28:00Z",
+      "messages": [
+        { "role": "user", "text": "Our product strategy feels scattered. How do we pick fewer, bigger bets?", "created_at": "2024-09-06T18:20:00Z" },
+        { "role": "assistant", "text": "Score opportunities by impact, confidence, effort. Choose top 3 bets; kill the rest. Tie roadmap to strategy metrics and review monthly.", "created_at": "2024-09-06T18:27:00Z" }
+      ]
+    },
+    {
+      "id": "sample_strategy_3",
+      "title": "Go-to-market strategy for B2B SaaS",
+      "created_at": "2024-08-30T16:00:00Z",
+      "updated_at": "2024-08-30T16:10:00Z",
+      "messages": [
+        { "role": "user", "text": "We need a go-to-market strategy for our B2B SaaS pilot—targeting mid-market ops teams.", "created_at": "2024-08-30T16:00:00Z" },
+        { "role": "assistant", "text": "ICP: ops directors, 100–500 emp. Strategy: outbound + webinars + partner channel. Offer a 30-day pilot, success plan, and ROI case.", "created_at": "2024-08-30T16:08:00Z" }
+      ]
+    },
+    {
+      "id": "sample_31",
+      "title": "Marketing strategy interview prep: SQL case + follow-up email",
+      "created_at": "2024-09-10T13:00:00Z",
+      "updated_at": "2024-09-10T13:08:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "I have an interview for a marketing strategy role that includes a SQL case. Can you outline what to study and help me draft a follow-up email?",
+          "created_at": "2024-09-10T13:00:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "For a marketing strategy + SQL interview: (1) Brush up on JOINs, window functions, and funnel/retention queries; (2) Prepare a 3-step GTM framework; (3) Draft a concise follow-up email referencing one insight you discussed.",
+          "created_at": "2024-09-10T13:08:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_32",
+      "title": "Mock interview for marketing strategy role: SQL task & follow-up email",
+      "created_at": "2024-09-09T16:20:00Z",
+      "updated_at": "2024-09-09T16:28:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "Run a mock interview focused on marketing strategy. Include a small SQL exercise on campaign performance and then review my follow-up email.",
+          "created_at": "2024-09-09T16:20:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Marketing strategy prompt: outline ICP, channels, and measurement. SQL: SELECT campaign_id, SUM(spend), SUM(clicks) FROM ads GROUP BY campaign_id; Then send a follow-up email within 24h summarizing your approach.",
+          "created_at": "2024-09-09T16:28:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_33",
+      "title": "Marketing strategy case interview with SQL test — follow-up email draft",
+      "created_at": "2024-09-08T11:10:00Z",
+      "updated_at": "2024-09-08T11:20:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "Tomorrow’s interview includes a marketing strategy case and a SQL test. Can you help me create a short follow-up email template?",
+          "created_at": "2024-09-08T11:10:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Sure. For the SQL portion, practice LEFT JOIN vs INNER JOIN and cohort queries. For marketing strategy, present a 90-day plan. Follow-up email: thank them, reference one SQL insight, and restate your strategy summary.",
+          "created_at": "2024-09-08T11:20:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_34",
+      "title": "Senior marketing strategy interview: SQL analytics and follow-up email",
+      "created_at": "2024-09-07T18:05:00Z",
+      "updated_at": "2024-09-07T18:14:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "For a senior marketing strategy interview, I need to showcase SQL analytics skills and send a persuasive follow-up email. What should I highlight?",
+          "created_at": "2024-09-07T18:05:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Highlight SQL strengths (LTV, CAC, multi-touch attribution queries) and a structured marketing strategy (ICP, channels, experimentation). The follow-up email should reiterate an interview insight and outline your first-30/60/90 plan.",
+          "created_at": "2024-09-07T18:14:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_35",
+      "title": "Entry-level marketing strategy interview: SQL exercise & follow-up email tips",
+      "created_at": "2024-09-06T09:40:00Z",
+      "updated_at": "2024-09-06T09:49:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "I’m preparing for an entry-level interview that mixes marketing strategy questions and a SQL exercise. Can you also give me follow-up email tips?",
+          "created_at": "2024-09-06T09:40:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Keep SQL simple and correct (GROUP BY, COUNT DISTINCT, date filters). For marketing strategy, frame goals, channels, and metrics. Follow-up email: short, specific, and sent within 24 hours of the interview.",
+          "created_at": "2024-09-06T09:49:00Z"
+        }
+      ]
+    },
+    {
+      "id": "sample_36",
+      "title": "Marketing strategy interview loop: SQL challenge, portfolio, follow-up email",
+      "created_at": "2024-09-05T14:25:00Z",
+      "updated_at": "2024-09-05T14:33:00Z",
+      "messages": [
+        {
+          "role": "user",
+          "text": "Interview loop includes a SQL challenge and a marketing strategy presentation. Help me organize deliverables and a follow-up email.",
+          "created_at": "2024-09-05T14:25:00Z"
+        },
+        {
+          "role": "assistant",
+          "text": "Plan: (1) SQL challenge—practice joins, window functions, and funnel metrics; (2) Marketing strategy deck—ICP, channels, tests; (3) Send a tailored follow-up email referencing a discussion from the interview.",
+          "created_at": "2024-09-05T14:33:00Z"
+        }
+      ]
+    }
+  ]
+}
