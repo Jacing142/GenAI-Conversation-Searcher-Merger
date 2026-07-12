@@ -211,6 +211,71 @@ select:focus {
   box-shadow: var(--shadow-sm);
 }
 
+/* Built by card */
+.built-by-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.built-by-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 12px;
+}
+
+.built-by-name {
+  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.built-by-tagline {
+  margin: 4px 0 16px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.built-by-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--primary);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--radius-input);
+  font-weight: 500;
+  font-size: 15px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.built-by-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.built-by-btn-secondary {
+  margin-top: 8px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.built-by-btn-secondary:hover {
+  background: #f1f5f9;
+  border-color: var(--primary);
+}
+
 /* Search specific styles */
 #search-section {
   margin-top: 32px;
