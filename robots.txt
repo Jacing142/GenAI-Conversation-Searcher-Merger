@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gen-ai-conversation-searcher-merger.vercel.app/sitemap.xml
