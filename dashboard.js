@@ -2,8 +2,6 @@
 
 import { 
   renderHourHistogram, 
-  renderTopThreads, 
-  renderWordsDistribution,
   renderMessagesPerChat,
   renderActivityTimeline,
   renderUserVsAI,
@@ -17,51 +15,6 @@ const fmt = (n) => n?.toLocaleString?.() ?? n;
 // Store current chart type
 let currentChartType = null;
 let currentCanvasId = null;
-
-// Synthesize fake threads from monthly counts so charts.js can stay untouched.
-// Distributes N "messages" per month across the last 12 months.
-function synthesizeThreadsFromMonthlyCounts(monthlyCounts = []) {
-  if (!Array.isArray(monthlyCounts) || monthlyCounts.length === 0) return [];
-  const threads = [];
-  const now = new Date();
-
-  // Build from oldest → newest so axis looks natural
-  const months = monthlyCounts.slice(); // copy
-  const totalMonths = months.length;
-
-  months.forEach((count, i) => {
-    const msgs = [];
-    // Choose a date in the i-th month from the end (older first)
-    const d = new Date(now);
-    d.setMonth(d.getMonth() - (totalMonths - 1 - i));
-    d.setDate(15); // middle of month to keep it simple
-    d.setHours(10, 0, 0, 0);
-
-    // We only need "count" messages for charts.js to aggregate
-    const n = Math.max(0, Math.floor(count));
-    for (let k = 0; k < n; k++) {
-      const mDate = new Date(d);
-      // jitter within the day (minute-level) so they aren't all identical
-      mDate.setMinutes(d.getMinutes() + (k % 60));
-      msgs.push({
-        role: k % 2 === 0 ? 'user' : 'assistant',
-        text: 'synthetic',
-        created_at: mDate.toISOString()
-      });
-    }
-
-    threads.push({
-      id: `synthetic_${i}`,
-      title: `Synthetic Month ${i + 1}`,
-      created_at: d.toISOString(),
-      updated_at: d.toISOString(),
-      messages: msgs
-    });
-  });
-
-  return threads;
-}
-
 
 // ---------- Core stats from real threads ----------
 function computeStats(threads){
@@ -156,32 +109,6 @@ function makeThreadsForBuckets(bucketCounts) {
   pushN(bucketCounts['11-20'] || 0, 15);
   pushN(bucketCounts['21-50'] || 0, 30);
   pushN(bucketCounts['50+']   || 0, 60);
-  return out;
-}
-
-function makeThreadsForMonthlyCounts(monthCounts) {
-  const out = [];
-  const now = new Date();
-  monthCounts.forEach((count, i) => {
-    const d = new Date(now);
-    d.setMonth(d.getMonth() - (11 - i)); // oldest → newest
-    const y = d.getFullYear();
-    const m = d.getMonth();
-    const messages = Array.from({ length: count }, (_, k) => {
-      const dd = new Date(y, m, Math.min(25, 1 + (k % 25)), 10, 0, 0);
-      return {
-        role: k % 2 ? 'assistant' : 'user',
-        text: `Synthetic activity ${k + 1}`,
-        created_at: dd.toISOString()
-      };
-    });
-    out.push({
-      id: `month_${y}_${String(m + 1).padStart(2, '0')}`,
-      title: `Activity ${y}-${String(m + 1).padStart(2, '0')}`,
-      created_at: new Date(y, m, 1).toISOString(),
-      messages
-    });
-  });
   return out;
 }
 

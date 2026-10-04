@@ -26,8 +26,9 @@
 
   // Initialize with your project token
   mixpanel.init("cc23d9486495b370a47e12a1de79c6d2", {
-    debug: true,
+    debug: false,
     track_pageview: true,
+    autocapture: false,
     persistence: "localStorage"
   });
   </script>
@@ -113,7 +114,7 @@
         <div id="dropZone" aria-label="Drag and drop files here">
           <div>
             <strong>Drag & drop ChatGPT/Claude ZIP or JSON files here</strong><br>
-            <small style="color: #667085;">Supports .zip and .json files up to 100MB</small>
+            <small style="color: #667085;">Supports .zip and .json exports</small>
           </div>
         </div>
 
@@ -122,7 +123,7 @@
 
         <!-- Privacy note -->
         <div id="privacy-note" style="margin-top: 24px;">
-          <strong>Privacy:</strong> All processing happens <em>locally in your browser</em>. No files or data are uploaded anywhere.
+          <strong>Privacy:</strong> Your files are read <em>locally in your browser</em>. Conversation content is never uploaded. The site counts anonymous usage (visits, how many files and conversations were loaded, export format) with Mixpanel.
         </div>
       </div>
 
@@ -220,10 +221,8 @@
 
   <!-- Vendor JS (pinned, non-module) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <!-- Entry module -->
   <script type="module" src="./app.js"></script>
