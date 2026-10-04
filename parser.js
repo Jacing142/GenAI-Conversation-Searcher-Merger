@@ -410,7 +410,7 @@ export async function parseExport(file, existingConversations = []) {
     console.log(`📦 Raw data size: ${(rawSize / 1024 / 1024).toFixed(2)} MB`);
 
     // Calculate offset for IDs when merging
-    const idOffset = existingConversations.length;
+    const idOffset = existingConversations.reduce((m, c) => Math.max(m, (parseInt(String(c.id).split('_')[1], 10) + 1) || 0), 0);
 
     // Filter conversations
     const filtered = conversations
