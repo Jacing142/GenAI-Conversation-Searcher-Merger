@@ -760,7 +760,7 @@ function renderFilterChips() {
   }
   bar.innerHTML = filters.map(f => `
     <span style="display:inline-flex;align-items:center;gap:6px;background:#e2e8f0;border-radius:16px;padding:4px 10px;font-size:12px;">
-      <span>"${f}"</span>
+      <span>"${escapeHTML(f)}"</span>
       <button class="chip-x" data-filter="${encodeURIComponent(f)}" style="border:none;background:transparent;cursor:pointer;">✕</button>
     </span>
   `).join('');
@@ -799,7 +799,7 @@ function renderResults(results) {
           <label style="display:flex; align-items:start; gap:0.5rem; cursor:pointer;">
             <input type="checkbox" data-conv-id="${conv.id}" style="margin-top:4px;">
             <div style="flex:1;">
-              <h4 style="margin:0 0 0.25rem 0; color:#1e40af;">${conv.title}</h4>
+              <h4 style="margin:0 0 0.25rem 0; color:#1e40af;">${escapeHTML(conv.title)}</h4>
               ${showSnippet ? `<div style="color:#64748b; font-size:0.875rem; line-height:1.4;">${snippet}</div>` : ''}
               <div style="color:#94a3b8; font-size:0.75rem; margin-top:0.5rem;">
                 ${new Date(conv.created_at).toLocaleDateString()} • ${conv.messages.length} messages
